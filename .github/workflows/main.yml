@@ -33,6 +33,10 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /
           local-dir: ./
+          protocol: ftps # ← most cPanel hosts prefer this (explicit FTPS)
+          port: 21 # usually stays 21 even with ftps
+          timeout: 900000 # ← 15 minutes in milliseconds (you can go up to 1800000 = 30 min)
+          security: loose # ← helps if there's any certificate warning
           exclude: |
             **/.git*
             **/.git*/**
