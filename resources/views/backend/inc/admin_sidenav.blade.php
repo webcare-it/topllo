@@ -72,15 +72,25 @@
                                 </a>
                             </li>
                             <li class="aiz-side-nav-item">
+                                <a href="{{route('products.own')}}" class="aiz-side-nav-link {{ areActiveRoutes(['products.own']) }}">
+                                    <span class="aiz-side-nav-text">{{ translate('Own Products') }}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
+                                <a href="{{route('products.dropshipping')}}" class="aiz-side-nav-link {{ areActiveRoutes(['products.dropshipping']) }}">
+                                    <span class="aiz-side-nav-text">{{ translate('Dropshipping Products') }}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
                                     <a href="{{route('droploo.products.all')}}" class="aiz-side-nav-link">
                                         <span class="aiz-side-nav-text">{{ translate('Droploo Products') }}</span>
                                     </a>
                                 </li>
-                            <li class="aiz-side-nav-item">
+                            {{-- <li class="aiz-side-nav-item">
                                 <a href="{{route('products.admin')}}" class="aiz-side-nav-link {{ areActiveRoutes(['products.admin', 'products.create', 'products.admin.edit']) }}" >
                                     <span class="aiz-side-nav-text">{{ translate('In House Products') }}</span>
                                 </a>
-                            </li>
+                            </li> --}}
                             @if(get_setting('vendor_system_activation') == 1)
                                 <li class="aiz-side-nav-item">
                                     <a href="{{route('products.seller')}}" class="aiz-side-nav-link {{ areActiveRoutes(['products.seller', 'products.seller.edit']) }}">
@@ -240,11 +250,29 @@
                                     <span class="aiz-side-nav-text">{{translate('All Orders')}}</span>
                                 </a>
                             </li>
+                            <li class="aiz-side-nav-item">
+                                <a href="{{ route('droploo_orders.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['droploo_orders.index', 'droploo_orders.show'])}}">
+                                    <span class="aiz-side-nav-text">{{translate('Droploo Product Sales')}}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
+                                <a href="{{ route('own_orders.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['own_orders.index', 'own_orders.show'])}}">
+                                    <span class="aiz-side-nav-text">{{translate('Own Product Sales')}}</span>
+                                </a>
+                            </li>
                         @endif
                         @if(Auth::check() && Auth::user() && (Auth::user()->user_type == 'admin' || in_array('3', json_decode(Auth::user()->staff->role->permissions))))
                             <li class="aiz-side-nav-item">
                                 <a href="{{ route('manual_orders.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['manual_orders.index'])}}">
                                     <span class="aiz-side-nav-text">{{translate('Manual Order')}}</span>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if(Auth::check() && Auth::user() && (Auth::user()->user_type == 'admin' || in_array('3', json_decode(Auth::user()->staff->role->permissions))))
+                            <li class="aiz-side-nav-item">
+                                <a href="{{ route('fraud_checker') }}" class="aiz-side-nav-link {{ areActiveRoutes(['fraud_checker'])}}">
+                                    <span class="aiz-side-nav-text">{{translate('Fraud checker')}}</span>
                                 </a>
                             </li>
                         @endif
@@ -462,6 +490,11 @@
                             <li class="aiz-side-nav-item">
                                 <a href="{{ route('in_house_sale_report.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['in_house_sale_report.index'])}}">
                                     <span class="aiz-side-nav-text">{{ translate('In House Product Sale') }}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
+                                <a href="{{ route('own_products_sale_report.index') }}" class="aiz-side-nav-link {{ areActiveRoutes(['own_products_sale_report.index'])}}">
+                                    <span class="aiz-side-nav-text">{{ translate('Own Products Sale') }}</span>
                                 </a>
                             </li>
                             {{-- <li class="aiz-side-nav-item">
@@ -865,8 +898,18 @@
                                 </a>
                             </li>
                             <li class="aiz-side-nav-item">
+                                <a href="{{route('general_setting.credentials')}}" class="aiz-side-nav-link">
+                                    <span class="aiz-side-nav-text">{{translate('Credentials')}}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
                                 <a href="{{route('activation.index')}}" class="aiz-side-nav-link">
                                     <span class="aiz-side-nav-text">{{translate('Features activation')}}</span>
+                                </a>
+                            </li>
+                            <li class="aiz-side-nav-item">
+                                <a href="{{route('google_analytics.index')}}" class="aiz-side-nav-link">
+                                    <span class="aiz-side-nav-text">{{translate('Analytics Tools')}}</span>
                                 </a>
                             </li>
 
@@ -924,7 +967,7 @@
                                     </li>
                                 </ul>
                             </li> --}}
-
+<!--
                             <li class="aiz-side-nav-item">
                                 <a href="javascript:void(0);" class="aiz-side-nav-link">
                                     <span class="aiz-side-nav-text">{{translate('Google')}}</span>
@@ -952,7 +995,7 @@
                                         </a>
                                     </li> --}}
                                 </ul>
-                            </li>
+                            </li> -->
 
 
 

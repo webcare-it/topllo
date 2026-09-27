@@ -8,7 +8,6 @@ import { WishlistButton } from "../common/wishlist-button";
 import { DetailsModal } from "./details-modal";
 import { useModal } from "@/hooks/useModal";
 import { ModalWrapper } from "../common/modal-wrapper";
-import { Review } from "./review";
 import { Discount } from "../common/discount";
 import { CheckoutButton } from "../common/checkout-button";
 import { OptimizedImage } from "../common/optimized-image";
@@ -16,16 +15,17 @@ import { Button } from "../ui/button";
 
 interface Props {
     product: ProductType;
+    badge?: string;
 }
 
-export const ProductCard = ({ product }: Props) => {
+export const ProductCard = ({ product, badge = "" }: Props) => {
     const { modalRef, modalConfig, onHideModal, onShowModal } = useModal();
 
     return (
         <>
             <div className="group relative mt-2 md:mt-0 overflow-hidden rounded-lg border bg-card transition-all hover:scale-105 cursor-pointer duration-300 select-none">
                 <WishlistButton product={product} size="DEFAULT" />
-                <Discount product={product} type="CARD" />
+                <Discount product={product} type="CARD" badge={badge} />
 
                 <Link to={`/products/${product?.id}/${slugify(product?.name)}`}>
                     <div className="relative aspect-[16/17] overflow-hidden bg-muted">
@@ -37,11 +37,20 @@ export const ProductCard = ({ product }: Props) => {
                     </div>
                 </Link>
 
-                <div className="p-1.5 sm:p-2 xl:p-3 group-hover:bg-primary/5">
+                <div className="p-1.5 sm:p-2 group-hover:bg-primary/5">
                     <Link
                         to={`/products/${product?.id}/${slugify(product?.name)}`}
                     >
-                        <Review product={product} starSize="w-3 h-3" />
+                        {product?.in_stock ? (
+                            <span className="text-xs font-medium text-green-600 bg-green-100 rounded px-2 py-0.5">
+                                In stock
+                            </span>
+                        ) : (
+                            <span className="text-xs font-medium text-red-600 bg-red-100 rounded px-2 py-0.5">
+                                Out of stock
+                            </span>
+                        )}
+                        {/* <Review product={product} starSize="w-3 h-3" /> */}
                         <h3 className="line-clamp-1 mt-0.5 text-xs md:text-sm font-medium leading-tight text-foreground duration-300">
                             {product?.name}
                         </h3>
@@ -58,7 +67,7 @@ export const ProductCard = ({ product }: Props) => {
                         </div>
                     </Link>
 
-                    <div className="flex items-center gap-1.5 md:gap-2 duration-300">
+                    <div className="flex items-center gap-1.5 md:gap-2 -mb-0.5 duration-300">
                         <div className="flex-1 w-full">
                             <CartButton
                                 product={product}
@@ -163,26 +172,26 @@ export const ProductSuccess = ({
 export const ProductCardSkeleton = () => {
     return (
         <div className="group relative mt-2 md:mt-0 overflow-hidden rounded-lg border bg-card transition-all hover:scale-105 cursor-pointer duration-300 select-none">
-            <div className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm">
+            <div className="absolute right-1 top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm">
                 <Skeleton className="h-4 w-4 rounded-full" />
             </div>
-            <div className="absolute left-2 top-2 z-10">
-                <Skeleton className="h-5 w-8 rounded-full" />
+            <div className="absolute left-1 top-1 z-10">
+                <Skeleton className="h-5 w-14 rounded-full" />
             </div>
 
             <div className="relative aspect-[16/17] overflow-hidden bg-muted">
                 <Skeleton className="h-full w-full" />
             </div>
 
-            <div className="p-1.5 sm:p-2 xl:p-3">
-                <div className="flex items-center gap-1">
+            <div className="p-1.5 sm:p-2">
+                {/* <div className="flex items-center gap-1">
                     <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
                             <Skeleton key={i} className="h-4 w-4" />
                         ))}
                     </div>
                     <Skeleton className="h-3 w-8" />
-                </div>
+                </div> */}
 
                 <Skeleton className="h-4 w-full my-1" />
 
@@ -191,8 +200,8 @@ export const ProductCardSkeleton = () => {
                     <Skeleton className="h-4 w-12" />
                 </div>
                 <div className="flex gap-2">
-                    <Skeleton className="flex-1 h-8" />
-                    <Skeleton className="flex-1 h-8" />
+                    <Skeleton className="flex-1 h-7" />
+                    <Skeleton className="flex-1 h-7" />
                 </div>
             </div>
         </div>

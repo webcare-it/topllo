@@ -6,6 +6,7 @@ import { useGetPolicy } from "@/api/queries/usePolicy";
 import { Skeleton } from "@/components/common/skeleton";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import { RenderHtml } from "@/components/html";
 
 interface Props {
     product: ProductDetailsType;
@@ -52,12 +53,9 @@ export const ProductTabs = ({ product }: Props) => {
 
                 <TabsContent value="description" className="mt-6">
                     {product?.description ? (
-                        <div
-                            className="w-full overflow-hidden"
-                            dangerouslySetInnerHTML={{
-                                __html: product?.description,
-                            }}
-                        />
+                        <div className="w-full overflow-hidden px-4 md:px-6">
+                            <RenderHtml html={product.description} />
+                        </div>
                     ) : (
                         <p className="text-muted-foreground">
                             No product description available.

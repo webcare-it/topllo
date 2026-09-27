@@ -48,9 +48,9 @@
 		                            <a class="btn btn-soft-primary btn-icon btn-circle btn-sm" href="{{route('staffs.edit', encrypt($staff->id))}}" title="{{ translate('Edit') }}">
 		                                <i class="las la-edit"></i>
 		                            </a>
-		                            <a href="#" class="btn btn-soft-danger btn-icon btn-circle btn-sm confirm-delete" data-href="{{route('staffs.destroy', $staff->id)}}" title="{{ translate('Delete') }}">
-		                                <i class="las la-trash"></i>
-		                            </a>
+                                    <button type="button" class="btn btn-soft-danger btn-icon btn-circle btn-sm confirm-delete" data-href="{{route('staffs.destroy', $staff->id)}}" title="{{ translate('Delete') }}">
+                                <i class="las la-trash"></i>
+                            </button>
 		                        </td>
                         </tr>
                     @endif
@@ -67,4 +67,16 @@
 
 @section('modal')
     @include('modals.delete_modal')
+@endsection
+
+@section('script')
+    <script type="text/javascript">
+        $(document).on('click', '.confirm-delete', function(e) {
+            e.preventDefault();
+            var url = $(this).data('href');
+            $('#delete-modal').modal('show');
+            $('#delete-form').attr('action', url);
+        });
+    </script>
+
 @endsection

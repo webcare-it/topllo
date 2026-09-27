@@ -96,12 +96,12 @@
                         </div>
                     </div>
                     
-                    <!-- <div class="form-group row">
-                        <label class="col-md-3 col-form-label">{{translate('Description')}}</label>
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label">{{translate('Meta Description')}}</label>
                         <div class="col-md-9">
-                            <textarea name="description" rows="6" class="aiz-text-editor form-control" placeholder="{{translate('Description')}}">{!! $landingPage->description !!}</textarea>
+                            <textarea name="description" rows="6" class="form-control" placeholder="{{translate('Meta Description')}}">{!! $landingPage->description !!}</textarea>
                         </div>
-                    </div> -->
+                    </div>
                     
                     <!-- Regular Price and Discount Price Fields -->
                     <div class="form-group row">

@@ -1,15 +1,18 @@
 import { HeroSection } from "./hero";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { CategoriesSection } from "./categories";
-import { BestSellerSection } from "./best";
-import { FeaturedProductsSection } from "./feature";
 import {
     FlashDealSection,
     PromotionalSectionOne,
     PromotionalSectionThree,
     PromotionalSectionTwo,
 } from "./promotional";
-import { NewArrivalsSection, TodaysDealSection } from "./today";
+import {
+    BestSellerSection,
+    FeaturedProductsSection,
+    NewArrivalsSection,
+    TodaysDealSection,
+} from "./sections";
 import { CategoryProductsSection } from "./category";
 import { TrustBadgeSection } from "./trust-badge";
 import { removeLocalStorage } from "@/helper";
@@ -30,11 +33,11 @@ export const HomePage = () => {
             { key: "categories", component: <CategoriesSection /> },
             { key: "trust_badge", component: <TrustBadgeSection /> },
             {
-                key: "new_arrivals",
+                key: "best_seller_section",
                 component: (
-                    <NewArrivalsSection
+                    <BestSellerSection
                         isLoading={sectionLoading}
-                        products={homeSections?.new_arrivals?.data || []}
+                        products={homeSections?.best_selling?.data || []}
                     />
                 ),
             },
@@ -43,11 +46,11 @@ export const HomePage = () => {
                 component: <PromotionalSectionOne />,
             },
             {
-                key: "best_seller_section",
+                key: "new_arrivals",
                 component: (
-                    <BestSellerSection
+                    <NewArrivalsSection
                         isLoading={sectionLoading}
-                        products={homeSections?.best_selling?.data || []}
+                        products={homeSections?.new_arrivals?.data || []}
                     />
                 ),
             },
@@ -72,7 +75,12 @@ export const HomePage = () => {
             },
             {
                 key: "category_products_section",
-                component: <CategoryProductsSection />,
+                component: (
+                    <CategoryProductsSection
+                        isLoading={sectionLoading}
+                        items={homeSections?.category_products || []}
+                    />
+                ),
             },
             {
                 key: "promotional_section_two",
@@ -96,7 +104,7 @@ export const HomePage = () => {
 
     return (
         <BaseLayout isShowNewsletterSection={true}>
-            <section className="flex flex-col gap-10 md:gap-20">
+            <section className="flex flex-col gap-6 md:gap-16">
                 {orderedSections.map((section) => (
                     <React.Fragment key={section.key}>
                         {section.component}

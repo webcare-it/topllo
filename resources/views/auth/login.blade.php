@@ -28,7 +28,15 @@
                                 @endif
                             </div>
                             <div class="form-group">
-                                <input id="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required placeholder="{{ translate('Password') }}">
+                                <div class="input-group">
+                                    <input id="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required placeholder="{{ translate('Password') }}">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" style="color: #000 !important; cursor: pointer;" id="togglePassword">
+                                           <i class="lar la-eye" id="toggleIconSteadfast"></i>
+                                        </span>
+                                        
+                                    </div>
+                                </div>
                                 @if ($errors->has('password'))
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $errors->first('password') }}</strong>
@@ -86,5 +94,11 @@
             $('#email').val('admin@example.com');
             $('#password').val('123456');
         }
+        $('#togglePassword').on('click', function() {
+            const passwordField = $('#password');
+            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+            passwordField.attr('type', type);
+            $(this).find('i').toggleClass('lar la-eye lar la-eye-slash');
+        });
     </script>
 @endsection

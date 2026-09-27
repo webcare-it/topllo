@@ -234,14 +234,14 @@ class OrderController extends Controller
 
 
         Cart::where('user_id', $request->user_id)->orWhere('temp_user_id', $request->user_id)->delete();
-
-//        if (
-//            $request->payment_type == 'cash_on_delivery'
-//            || $request->payment_type == 'wallet'
-//            || strpos($request->payment_type, "manual_payment_") !== false // if payment type like  manual_payment_1 or  manual_payment_25 etc
-//        ) {
-//            NotificationUtility::sendOrderPlacedNotification($order);
-//        }
+        
+        if (
+           $request->payment_type == 'cash_on_delivery'
+           || $request->payment_type == 'wallet'
+           || strpos($request->payment_type, "manual_payment_") !== false 
+          ) {
+               NotificationUtility::sendOrderPlacedNotification($order);
+            }
 
 
         return response()->json([

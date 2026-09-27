@@ -1,4 +1,3 @@
-import { Title } from "./common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 import { LandingVariantCard } from "./variant";
@@ -13,6 +12,8 @@ import { setCartItemsCampaign } from "@/redux/slice/campaignSlice";
 import { useGtmTracker, type PurchaseTrackerType } from "@/hooks/useGtmTracker";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { OptimizedImage } from "@/components/common/optimized-image";
+import { Checkbox } from "@/components/ui/checkbox";
+import { OrdersSection } from "./order";
 
 interface Props {
     info: LandingPageType;
@@ -72,34 +73,71 @@ export const ProductSection = ({ info }: Props) => {
     }, [isIntersecting, products, startCheckoutTracker, campaign]);
 
     return (
-        <section id="order-section" ref={ref}>
+        <section id="order-section" ref={ref} className="w-full mx-auto">
             {products?.length > 0 ? (
-                <>
-                    <Title>Choose Your Favorite Products</Title>
-
-                    <div
-                        className={`grid grid-cols-1 md:grid-cols-${products?.length > 2 ? 2 : 1} gap-4`}
-                    >
-                        {products?.map((product) => (
-                            <SingleProduct key={product.id} product={product} />
-                        ))}
+                <div className="w-full n">
+                    {/* Form Banner Header */}
+                    <div className="bg-primary text-primary-foreground text-center py-5 px-2 md:px-6 rounded-t-lg">
+                        <h2 className="text-xl md:text-2xl font-bold mb-1">
+                            Order Form
+                        </h2>
+                        <p className="text-sm md:text-base">
+                            Please select the products you want to order and
+                            fill in your shipping information.
+                        </p>
                     </div>
-                </>
+
+                    <div className="bg-white">
+                        <div className="divide-y divide-gray-200 border border-gray-200 rounded-t-0 rounded-b-md overflow-hidden">
+                            {products?.map((product, index) => (
+                                <SingleProduct
+                                    key={product.id}
+                                    product={product}
+                                    isFirstProduct={index === 0}
+                                    isSectionVisible={isIntersecting}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <OrdersSection />
+                </div>
             ) : null}
         </section>
     );
 };
 
-const SingleProduct = ({ product }: { product: ProductDetailsType }) => {
+const SingleProduct = ({
+    product,
+    isFirstProduct = false,
+    isSectionVisible = false,
+}: {
+    product: ProductDetailsType;
+    isFirstProduct?: boolean;
+    isSectionVisible?: boolean;
+}) => {
     const dispatch = useDispatch();
     const [quantity, setQuantity] = useState<number>(1);
     const [displayPrice, setDisplayPrice] = useState<string>("0");
     const [selectedSize, setSelectedSize] = useState<StateType>(null);
     const [selectedColor, setSelectedColor] = useState<StateType>(null);
+    const autoAddedRef = useRef(false);
     const campaign = useSelector(
         (state: RootStateType) => state.campaign?.items,
     );
     const { data, isLoading: isCartLoading } = useGetCampaignCartQuery();
+
+    // Auto-select first variant on mount
+    useEffect(() => {
+        if (product?.variants && product.variants.length > 0) {
+            const firstVariant = product.variants[0];
+            if (firstVariant?.size_name) {
+                setSelectedSize(firstVariant.size_name);
+            }
+            if (firstVariant?.color_name) {
+                setSelectedColor(firstVariant.color_name);
+            }
+        }
+    }, [product?.variants, product?.id]);
 
     useEffect(() => {
         if (!isCartLoading) {
@@ -134,34 +172,69 @@ const SingleProduct = ({ product }: { product: ProductDetailsType }) => {
         getVariant(selectedColor, selectedSize, product?.variants),
     );
 
+    // Auto-add first product when section becomes visible and not already in cart
+    useEffect(() => {
+        if (
+            isFirstProduct &&
+            isSectionVisible &&
+            !autoAddedRef.current &&
+            !isInCart &&
+            !isLoading
+        ) {
+            autoAddedRef.current = true;
+            const timer = setTimeout(() => {
+                fnAddToCart();
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [isFirstProduct, isSectionVisible, isInCart, isLoading, fnAddToCart]);
+
+    const handleIncrement = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setQuantity((prev) => prev + 1);
+    };
+
+    const handleDecrement = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (quantity > 1) {
+            setQuantity((prev) => prev - 1);
+        }
+    };
+
     return (
         <div
             onClick={() => fnAddToCart()}
-            key={product.id}
+            key={product?.id}
             className={cn(
-                "rounded-lg shadow-md p-1 md:p-3 cursor-pointer border hover:border-primary/50 transition-all duration-300  hover:bg-primary/5",
+                "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-2 md:p-4 transition-all duration-200 cursor-pointer select-none",
                 isLoading && "opacity-75 cursor-not-allowed",
-                isInCart && "border-primary hover:border-primary bg-primary/5",
+                isInCart ? "bg-amber-50/40" : "bg-white hover:bg-gray-50/50",
             )}
         >
-            <div className="flex items-start gap-2 md:gap-4">
-                <div className="relative min-h-[140px] max-h-[200px] w-24 md:w-32 overflow-hidden rounded-lg">
-                    <OptimizedImage
-                        src={product?.thumbnail_image || ""}
-                        alt={product?.name}
-                        className="absolute w-full h-full object-cover"
+            <div className="flex items-center gap-2 md:gap-4 flex-1 w-full sm:w-auto">
+                <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center"
+                >
+                    <Checkbox
+                        className="h-5 w-5 border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary cursor-pointer"
+                        checked={!!isInCart}
+                        onCheckedChange={() => fnAddToCart()}
                     />
                 </div>
 
-                <div className="flex-1">
-                    <h2 className="text-sm md:text-base font-semibold line-clamp-1">
+                <div className="relative size-14 md:size-16 overflow-hidden rounded border border-gray-200 flex-shrink-0 bg-gray-50">
+                    <OptimizedImage
+                        src={product?.thumbnail_image || ""}
+                        alt={product?.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 leading-snug">
                         {product?.name}
-                    </h2>
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm md:text-base lg:text-lg font-bold text-foreground">
-                            {displayPrice}
-                        </span>
-                    </div>
+                    </h3>
 
                     <LandingVariantCard
                         product={product}
@@ -173,6 +246,36 @@ const SingleProduct = ({ product }: { product: ProductDetailsType }) => {
                         setSelectedColor={setSelectedColor}
                         setDisplayPrice={setDisplayPrice}
                     />
+                </div>
+            </div>
+
+            {/* Right Box: Quantity Controls Counter & Appended Dynamic Prices */}
+            <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center border border-gray-300 rounded-md bg-white overflow-hidden h-8"
+                >
+                    <button
+                        onClick={handleDecrement}
+                        className="px-3 h-full text-gray-500 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer"
+                    >
+                        -
+                    </button>
+                    <span className="px-3 min-w-[2.5rem] text-center text-sm font-semibold text-gray-800">
+                        {quantity}
+                    </span>
+                    <button
+                        onClick={handleIncrement}
+                        className="px-3 h-full text-gray-500 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer"
+                    >
+                        +
+                    </button>
+                </div>
+
+                <div className="text-right flex-shrink-0">
+                    <span className="text-base md:text-lg font-bold text-gray-900 whitespace-nowrap">
+                        {displayPrice}
+                    </span>
                 </div>
             </div>
         </div>

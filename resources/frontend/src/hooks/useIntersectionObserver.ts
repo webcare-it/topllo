@@ -13,7 +13,7 @@ export const useIntersectionObserver = (
   const [hasIntersected, setHasIntersected] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { threshold = 0.1, rootMargin = "0px" } = options;
+  const { threshold = 0.1, rootMargin = "0px", triggerOnce = false } = options;
 
   useEffect(() => {
     const element = ref.current;
@@ -27,6 +27,10 @@ export const useIntersectionObserver = (
         if (isElementIntersecting && !hasIntersected) {
           setHasIntersected(true);
         }
+
+        if (isElementIntersecting && triggerOnce) {
+          observer.unobserve(element);
+        }
       },
       {
         threshold,
@@ -39,7 +43,7 @@ export const useIntersectionObserver = (
     return () => {
       observer.unobserve(element);
     };
-  }, [threshold, rootMargin, hasIntersected]);
+  }, [threshold, rootMargin, hasIntersected, triggerOnce]);
 
   return { ref, isIntersecting, hasIntersected };
 };

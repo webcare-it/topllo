@@ -60,6 +60,42 @@
                             <small class="text-muted offset-md-3 col-md-8">{{ translate('Hex Color Code') }}</small>
                         </div>
 
+                        <div class="form-group row">
+                            <label class="col-md-3 col-from-label">{{translate('Bkash Number')}}</label>
+                            <div class="col-md-8">
+                                <input type="hidden" name="types[]" value="bkash_number">
+        	                    <input type="text" name="bkash_number" class="form-control" placeholder="{{ translate('Bkash Number') }}" value="{{ get_setting('bkash_number') }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 col-from-label">{{translate('Facebook Page Username')}}</label>
+                            <div class="col-md-8">
+                                <input type="hidden" name="types[]" value="fb_page_username">
+        	                    <input type="text" name="fb_page_username" class="form-control" placeholder="{{ translate('ExampleBD') }}" value="{{ get_setting('fb_page_username') }}" oninput="this.value = this.value.replace(/[^a-zA-Z0-9._]/g, '')">
+								 <small class="text-info fw-medium" style="font-size: 13px">
+                                    Only accepted usernames no url. Example: <strong>yourpageusername</strong>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 col-from-label">{{translate('Whatsapp Number')}}</label>
+                            <div class="col-md-8">
+                                <input type="hidden" name="types[]" value="whatsapp_number">
+        	                    <input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')" name="whatsapp_number" class="form-control" placeholder="{{ translate('Whatsapp Number') }}" value="{{ get_setting('whatsapp_number') }}">
+
+                                <small class="text-info fw-medium" style="font-size: 13px">
+                                    WhatsApp number must include the country code. Example: <strong>8801300000000</strong>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 col-from-label">{{translate('Product Details Whatsapp Message')}}</label>
+                            <div class="col-md-8">
+                                <input type="hidden" name="types[]" value="details_whatsapp_message">
+        	                    <input type="text" name="details_whatsapp_message" class="form-control" placeholder="{{ translate('Product Details Whatsapp Message') }}" value="{{ get_setting('details_whatsapp_message') }}">
+                            </div>
+                        </div>
+
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 // Base color sync

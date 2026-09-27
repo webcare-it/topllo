@@ -64,7 +64,7 @@ class ProductDetailCollection extends ResourceCollection
                     $firstStock = $data->stocks->first();
                     $sku = $firstStock ? $firstStock->sku : null;
                     $currentStock = $firstStock ? (integer)$firstStock->qty : 0;
-                    
+
                     return [
                         'id' => (integer)$data->id,
                         'name' => $translatedName,
@@ -77,6 +77,7 @@ class ProductDetailCollection extends ResourceCollection
                         'shop_id' => $data->added_by == 'admin' ? 0 : ($data->user && $data->user->shop ? $data->user->shop->id : ""),
                         'shop_name' => $data->added_by == 'admin' ? 'In House Product' : ($data->user && $data->user->shop ? $data->user->shop->name : ""),
                         'shop_logo' => $data->added_by == 'admin' ? api_asset(get_setting('header_logo')) : ($data->user && $data->user->shop ? api_asset($data->user->shop->logo) : ""),
+                        'in_stock' => (boolean) $currentStock > 0 ? true : false,
                         'photos' => $photos,
                         'thumbnail_image' => api_asset($data->thumbnail_img),
                         'tags' => $data->tags ? explode(',', $data->tags) : [],
@@ -129,7 +130,7 @@ class ProductDetailCollection extends ResourceCollection
                         'has_stocks' => isset($data->stocks),
                         'stock_count' => $data->stocks->count() ?? 0,
                     ]));
-                    
+
                     // Return a comprehensive error response with available data
                     return [
                         'id' => (integer)($data->id ?? 0),
@@ -186,15 +187,15 @@ class ProductDetailCollection extends ResourceCollection
         try {
             $basePrice = home_discounted_base_price($data, false);
             $discountedPrice = home_discounted_price($data, false);
-            
+
             // Handle cases where prices might not be in expected format
             $baseParts = explode('-', $basePrice);
             $discountedParts = explode('-', $discountedPrice);
-            
+
             $baseMin = isset($baseParts[0]) ? (double)$baseParts[0] : 0;
             $discountedMin = isset($discountedParts[0]) ? (double)$discountedParts[0] : 0;
             $discountedMax = isset($discountedParts[1]) ? (double)$discountedParts[1] : $discountedMin;
-            
+
             if ($baseMin == $discountedMin && $discountedMin == $discountedMax) {
                 return format_price($discountedMin);
             } else {

@@ -87,14 +87,14 @@
                         </div>
                     </div>
                     
-                    <!-- <div class="form-group row">
-                        <label class="col-md-3 col-form-label">{{translate('Description')}}</label>
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label">{{translate('Meta Description')}}</label>
                         <div class="col-md-9">
-                            <textarea name="description" rows="6" class="aiz-text-editor form-control" placeholder="{{translate('Description')}}"></textarea>
+                            <textarea name="description" rows="6" class="form-control" placeholder="{{translate('Meta Description')}}"></textarea>
                         </div>
                     </div>
-                     -->
-                    <!-- Regular Price and Discount Price Fields -->
+                    
+
                     <div class="form-group row">
                         <label class="col-md-3 col-form-label">{{translate('Regular Price')}}</label>
                         <div class="col-md-9">
@@ -110,13 +110,18 @@
                     </div>
                     
                     <div class="form-group row">
-                        <label class="col-md-3 col-form-label">{{translate('Products')}}</label>
+                        <label class="col-md-3 col-form-label">
+                            {{translate('Products')}} <span class="text-danger">*</span>
+                        </label>
                         <div class="col-md-9">
-                            <select class="form-control aiz-selectpicker" name="products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple>
+                            <select class="form-control aiz-selectpicker" name="products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple required>
                                 @foreach($products as $product)
                                     <option value="{{ $product->id }}">{{ $product->name }}</option>
                                 @endforeach
                             </select>
+                            @error('products')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
                     </div>
                     

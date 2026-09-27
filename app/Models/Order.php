@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CombinedOrder;
 
 class Order extends Model
 {
@@ -49,5 +50,9 @@ class Order extends Model
     public function proxy_cart_reference_id()
     {
         return $this->hasMany(ProxyPayment::class)->select('reference_id');
+    }
+    public function combinedOrder()
+    {
+        return $this->belongsTo(CombinedOrder::class);
     }
 }

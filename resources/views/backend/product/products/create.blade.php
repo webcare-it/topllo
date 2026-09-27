@@ -108,7 +108,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-md-3 col-form-label" for="signinSrEmail">{{translate('Thumbnail Image')}} <small>(300x300)</small></label>
+                            <label class="col-md-3 col-form-label" for="signinSrEmail">{{translate('Thumbnail Image')}} <small>(600x600)</small></label>
                             <div class="col-md-8">
                                 <div class="input-group" data-toggle="aizuploader" data-type="image">
                                     <div class="input-group-prepend">
@@ -444,7 +444,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-md-6 col-from-label">{{translate('Show Stock With Text Only')}}</label>
+                            <label class="col-md-6 col-from-label">{{translate('Show In Stock Text')}}</label>
                             <div class="col-md-6">
                                 <label class="aiz-switch aiz-switch-success mb-0">
                                     <input type="radio" name="stock_visibility_state" value="text">

@@ -191,7 +191,10 @@ export const ImageGallery = ({ img, product, className }: Props) => {
                             <motion.img
                                 key={selectedImage}
                                 src={
-                                    getImageUrl(imgUrl as string) || placeholder
+                                    imgUrl?.startsWith("/")
+                                        ? imgUrl
+                                        : getImageUrl(imgUrl as string) ||
+                                          placeholder
                                 }
                                 onError={() => setImgUrl(placeholder)}
                                 alt="Image Gallery"

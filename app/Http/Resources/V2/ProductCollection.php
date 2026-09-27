@@ -10,7 +10,7 @@ class ProductCollection extends ResourceCollection
     public function toArray($request)
     {
         $fields = $request->get('fields', null);
-        
+
         // Convert fields string to array if provided
         if ($fields) {
             $fields = explode(',', $fields);
@@ -23,6 +23,8 @@ class ProductCollection extends ResourceCollection
                 $calculable_price = home_discounted_base_price($data, false);
                 $calculable_price = number_format($calculable_price, $precision, '.', '');
                 $calculable_price = (float) $calculable_price;
+                $firstStock = $data->stocks->first();
+                $currentStock = $firstStock ? (integer)$firstStock->qty : 0;
 
                 $result = [
                     'id' => $data->id,
@@ -37,7 +39,7 @@ class ProductCollection extends ResourceCollection
                     'rating_count' => (int) Review::where('product_id', $data->id)->count(),
                     'sales' => (int) $data->num_of_sale,
                     'variant_product' => (int) $data->variant_product,
-                    
+                    'in_stock' => (boolean) $currentStock > 0 ? true : false,
                 ];
 
                 // Return only requested fields if specified

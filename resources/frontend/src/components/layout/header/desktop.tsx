@@ -8,6 +8,7 @@ import type { RootStateType } from "@/redux/store";
 import { MegaMenu } from "./mega-menu";
 import { Logo } from "./logo";
 import { useMemo } from "react";
+
 export const HeaderDesktop = ({
     isShowMegaMenu,
 }: {
@@ -26,8 +27,8 @@ export const HeaderDesktop = ({
     }, []);
 
     return (
-        <nav className="hidden md:block bg-background">
-            <div className="h-14 md:flex items-center justify-center w-full px-1 md:px-0 border-b">
+        <nav className="hidden md:block bg-background text-foreground">
+            <div className="h-14 md:flex items-center justify-center w-full px-1 md:px-6 border-b">
                 <div className="container flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 justify-start">
                         <Logo type="DESKTOP" />
@@ -38,64 +39,84 @@ export const HeaderDesktop = ({
                     </div>
 
                     <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                        {/* Track Order */}
                         <Link to="/track-order" title="Track Order">
                             <Button
-                                variant="ghost"
-                                className={`hover:text-primary ${
+                                variant={
                                     pathname.pathname === "/track-order"
-                                        ? "text-primary"
-                                        : ""
-                                }`}
+                                        ? "ghost"
+                                        : "outline"
+                                }
+                                className={
+                                    pathname.pathname === "/track-order"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                                        : "border-border bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground"
+                                }
                             >
                                 Track Order
                             </Button>
                         </Link>
+
+                        {/* Wishlist */}
                         <Link to="/wishlist" title="Wishlist">
                             <Button
-                                variant="ghost"
-                                size="icon-lg"
-                                className={`hover:text-primary ${
+                                variant={
                                     pathname.pathname === "/wishlist"
-                                        ? "text-primary"
-                                        : ""
-                                }`}
+                                        ? "ghost"
+                                        : "outline"
+                                }
+                                size="icon-lg"
+                                className={
+                                    pathname.pathname === "/wishlist"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                                        : "border-border bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground"
+                                }
                             >
                                 <div title="Wishlist" className="relative">
                                     <Heart
                                         strokeWidth={2.5}
                                         absoluteStrokeWidth
                                     />
+
                                     {wishlist?.items?.length > 0 && (
-                                        <span className="absolute -top-2.5 -right-2.5 bg-primary text-white rounded-full text-[10px] font-medium w-4 h-4 flex items-center justify-center">
+                                        <span className="absolute -top-2.5 -right-2.5 bg-primary text-primary-foreground rounded-full text-[10px] font-medium w-4 h-4 flex items-center justify-center">
                                             {wishlist?.items?.length}
                                         </span>
                                     )}
                                 </div>
+
+                                <span className="sr-only">Wishlist</span>
                             </Button>
-                            <span className="sr-only">Wishlist</span>
                         </Link>
 
+                        {/* Cart */}
                         <Link to="/cart">
                             <Button
-                                variant="ghost"
-                                size="icon-lg"
-                                className={`hover:text-primary ${
+                                variant={
                                     pathname.pathname === "/cart"
-                                        ? "text-primary"
-                                        : ""
-                                }`}
+                                        ? "ghost"
+                                        : "outline"
+                                }
+                                size="icon-lg"
+                                className={
+                                    pathname.pathname === "/cart"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                                        : "border-border bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground"
+                                }
                             >
                                 <div title="Shopping Cart" className="relative">
                                     <ShoppingCart
                                         strokeWidth={2.5}
                                         absoluteStrokeWidth
                                     />
+
                                     {cart?.items?.length > 0 && (
-                                        <span className="absolute -top-2.5 -right-2.5 bg-primary text-white rounded-full text-[10px] font-medium w-4 h-4 flex items-center justify-center">
+                                        <span className="absolute -top-2.5 -right-2.5 bg-primary text-primary-foreground rounded-full text-[10px] font-medium w-4 h-4 flex items-center justify-center">
                                             {cart?.items?.length}
                                         </span>
                                     )}
                                 </div>
+
                                 <span className="sr-only">Shopping Cart</span>
                             </Button>
                         </Link>
@@ -104,6 +125,7 @@ export const HeaderDesktop = ({
                     </div>
                 </div>
             </div>
+
             {isShowMegaMenu && megaMenu}
         </nav>
     );

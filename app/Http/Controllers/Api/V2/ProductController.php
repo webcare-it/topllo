@@ -8,8 +8,10 @@ use App\Http\Resources\V2\ProductDetailCollection;
 use App\Http\Resources\V2\FlashDealCollection;
 use App\Models\FlashDeal;
 use App\Models\Product;
+use App\Models\BusinessSetting;
 use App\Models\Shop;
 use App\Models\Color;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Utility\CategoryUtility;
 use App\Utility\SearchUtility;
@@ -136,34 +138,142 @@ class ProductController extends Controller
         $products = Product::where('published', 1)->orderBy('num_of_sale', 'desc');
         return new ProductMiniCollection(filter_products($products)->limit(20)->get());
     }
+    private function homeCategoryProduct(Request $request = null)
+    {
+        $request = $request ?: request();
+        $business_settings = BusinessSetting::where('type', 'home_categories')->first();
+
+        if (!$business_settings) {
+            return [];
+        }
+        
+        $category_ids = json_decode($business_settings->value);
+        
+        if (!is_array($category_ids)) {
+            $category_ids = [];
+        }
+
+        // Normalize and remove invalid values
+        $category_ids = array_values(array_filter($category_ids, function ($id) {
+            return $id !== null && $id !== '';
+        }));
+
+        // If no categories are configured, return empty success response
+        if (empty($category_ids)) {
+            return [];
+        }
+
+        // Get categories with their products including subcategories and sub-subcategories
+        $result = [];
+        $categories = Category::whereIn('id', $category_ids)->orderByRaw("FIELD(id, " . implode(',', $category_ids) . ")")->get();
+        
+        foreach ($categories as $category) {
+            // Get all subcategory IDs for this category (children categories)
+            $subcategoryIds = Category::where('parent_id', $category->id)->pluck('id')->toArray();
+            
+            // Get all sub-subcategory IDs for the subcategories (grandchildren categories)
+            $subSubcategoryIds = [];
+            if (!empty($subcategoryIds)) {
+                $subSubcategoryIds = Category::whereIn('parent_id', $subcategoryIds)->pluck('id')->toArray();
+            }
+            
+            // Combine all category IDs (main category + subcategories + sub-subcategories)
+            $allCategoryIds = array_merge([$category->id], $subcategoryIds, $subSubcategoryIds);
+            
+            // Get products for all these categories
+            $productsQuery = Product::whereIn('category_id', $allCategoryIds)
+                ->where('published', 1);
+            
+            if ($request->name != "" && $request->name != null) {
+                $productsQuery = $productsQuery->where('name', 'like', '%' . $request->name . '%');
+            }
+            
+            $products = $productsQuery->latest()->paginate(6);
+            
+            // Use category name directly without translation
+            $categoryName = $category->name;
+            
+            $result[] = [
+                'categoryId' => $category->id,
+                'name' => $categoryName,
+                'products' => new ProductMiniCollection($products)
+            ];
+        }
+        return $result;
+    }
+
 
     public function homeProducts()
     {
-        $products = Product::where('todays_deal', 1)->where('published', 1);
-            $new_arrivals_products = Product::where('published', 1)->latest();
-            $new_arrivals = new ProductMiniCollection(filter_products($new_arrivals_products)->limit(12)->get());
+        $getProductsBySetting = function ($settingType, $fallbackQuery) {
+            $businessSetting = BusinessSetting::where('type', $settingType)->first();
+            $productIds = $businessSetting ? json_decode($businessSetting->value, true) : [];
+            $productIds = is_array($productIds) ? array_values(array_filter($productIds, function ($id) {
+                return $id !== null && $id !== '';
+            })) : [];
 
-            $flash_dealss = FlashDeal::where('status', 1)->where('featured', 1)->where('start_date', '<=', strtotime(date('d-m-Y')))->where('end_date', '>=', strtotime(date('d-m-Y')))->get();
-            $flash_deals = new FlashDealCollection($flash_dealss);
+            if (!empty($productIds)) {
+                $productIdsList = implode(',', $productIds);
+                $products = Product::whereIn('id', $productIds)
+                    ->where('published', 1)
+                    ->orderByRaw("FIELD(id, {$productIdsList})");
 
-            $fproducts = Product::where('featured', 1)->where('published', 1);
-            $featured = new ProductMiniCollection(filter_products($fproducts)->latest()->paginate(12));
+                return new ProductMiniCollection(filter_products($products)->get());
+            }
 
-            // today's deal: latest 4 products with todays_deal flag (not num_of_sale sorting)
-            $todays_deal_products = Product::where('todays_deal', 1)->where('published', 1);
-            $todays_deal = new ProductMiniCollection(filter_products($todays_deal_products)->latest()->limit(12)->get());
+            return new ProductMiniCollection(filter_products($fallbackQuery)->latest()->limit(6)->get());
+        };
 
-            // best_selling: latest 4 products with best_selling flag (not num_of_sale sorting)
-            $best_selling_products = Product::where('best_selling', 1)->where('published', 1);
-            $best_selling = new ProductMiniCollection(filter_products($best_selling_products)->latest()->limit(12)->get());
+        $new_arrivals = $getProductsBySetting('home_new_arrival_products', Product::where('published', 1));
+        $flash_dealss = FlashDeal::where('status', 1)->where('featured', 1)->where('start_date', '<=', strtotime(date('d-m-Y')))->where('end_date', '>=', strtotime(date('d-m-Y')))->get();
+        $flash_deals = new FlashDealCollection($flash_dealss);
+        $featured = $getProductsBySetting('home_featured_products', Product::where('featured', 1)->where('published', 1));
+        $todays_deal = $getProductsBySetting('home_today_deals_products', Product::where('todays_deal', 1)->where('published', 1));
+        $best_selling = $getProductsBySetting('home_best_selling_products', Product::where('best_selling', 1)->where('published', 1));
 
-             return [
-                'new_arrivals' => $new_arrivals,
-                'flash_deal' => $flash_deals,
-                'featured' => $featured,
-                'best_selling' => $best_selling,
-                'todays_deal' => $todays_deal,
-            ];
+        return [
+            'new_arrivals' => $new_arrivals,
+            'flash_deal' => $flash_deals,
+            'featured' => $featured,
+            'best_selling' => $best_selling,
+            'todays_deal' => $todays_deal,
+            'category_products' => $this->homeCategoryProduct(),
+        ];
+    }
+
+    public function productHighlight($slug, Request $request)
+    {
+ 
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 12);
+
+        $perPage = min(max($perPage, 12), 100);
+
+        $products = null;
+
+        switch ($slug) {
+            case 'new_arrivals':
+                $products = Product::where('published', 1)->latest();
+                break;
+            case 'featured':
+                $products = Product::where('featured', 1)->where('published', 1)->latest();
+                break;
+            case 'best_selling':
+                $products = Product::where('best_selling', 1)->where('published', 1)->latest();
+                break;
+            case 'todays_deal':
+                $products = Product::where('todays_deal', 1)->where('published', 1)->latest();
+                break;
+            default:
+                return response()->json([
+                    'data' => [],
+                    'success' => false,
+                    'status' => 400,
+                    'message' => 'Invalid slug'
+                ], 400);
+        }
+
+        return new ProductCollection(filter_products($products)->paginate($perPage, ['*'], 'page', $page));
     }
 
     public function related($id)

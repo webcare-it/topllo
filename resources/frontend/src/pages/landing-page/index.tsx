@@ -14,8 +14,6 @@ import {
 import { motion } from "framer-motion";
 import { PackageX, Home, ArrowLeft, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { OrdersSection } from "./order";
-import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { ProductSection } from "./product";
 import { useLandingPage } from "@/api/queries/useLandingPage";
 import type { LandingPageType } from "./type";
@@ -25,9 +23,10 @@ import { LandingSkeleton } from "./skeleton";
 import { GtmSeo } from "./gtm";
 import { useEffect } from "react";
 import { removeLocalStorage } from "@/helper";
+import { SocialMessage } from "@/components/common/social-message";
 
 export const LandingPage = () => {
-    const { data, isLoading } = useLandingPage();
+    const { data, isLoading, slug } = useLandingPage();
 
     useEffect(() => {
         removeLocalStorage("token");
@@ -45,12 +44,14 @@ export const LandingPage = () => {
     if (landingData?.length === 0 && !isLoading) return <NoProductFoundUI />;
     const info = landingData?.[0] || {};
 
+    const title = `${window.location.origin}/campaign/${slug}`;
+
     return (
         <>
             <GtmSeo info={info} />
             <main className="min-h-screen overflow-hidden">
                 <HeaderSection />
-                <section className="container mx-auto px-4 sm:px-0 space-y-10 md:space-y-16">
+                <section className="container mx-auto px-2 space-y-10 md:space-y-16">
                     <div>
                         <Title>{info?.title}</Title>
                         <SubTitle>{info?.sub_title}</SubTitle>
@@ -74,13 +75,11 @@ export const LandingPage = () => {
                     <WhatOurCustomersSaySection info={info} />
 
                     <ProductSection info={info} />
-
-                    <OrdersSection />
                 </section>
 
                 <FooterLanding info={info} />
 
-                <ScrollToTop />
+                <SocialMessage land={title} />
             </main>
         </>
     );

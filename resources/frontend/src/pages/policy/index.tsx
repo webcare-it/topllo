@@ -3,6 +3,7 @@ import { NoDataFound } from "@/components/common/no-data-found";
 import { HomeSectionTitle } from "@/components/common/section-title";
 import { SeoWrapper } from "@/components/common/seo-wrapper";
 import { Skeleton } from "@/components/common/skeleton";
+import { RenderHtml } from "@/components/html";
 import { BaseLayout } from "@/components/layout/base-layout";
 
 interface SupportPolicyPage {
@@ -42,12 +43,7 @@ export const PolicyPage = () => {
                             <HomeSectionTitle
                                 title={info?.title || `Policy ${key}`}
                             />
-                            <div
-                                className=""
-                                dangerouslySetInnerHTML={{
-                                    __html: info?.content || "",
-                                }}
-                            />
+                            <RenderHtml html={info?.content || ""} />
                         </article>
                     ) : (
                         <NoDataFound title={"No policy found"} />

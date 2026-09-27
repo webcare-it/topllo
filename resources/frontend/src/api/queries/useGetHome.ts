@@ -9,6 +9,13 @@ interface HomeType {
         flash_deal: { data: FlashDealType[] | [] };
         todays_deal: { data: ProductType[] | [] };
         new_arrivals: { data: ProductType[] | [] };
+        category_products: {
+            categoryId: string;
+            name: string;
+            products: { data: ProductType[] };
+            hasProducts: boolean;
+            isLoading: boolean;
+        }[];
     };
     sectionLoading: boolean;
     isError: unknown;

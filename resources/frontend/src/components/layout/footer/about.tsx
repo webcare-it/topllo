@@ -20,14 +20,6 @@ export const AboutUsFooter = () => {
             name: "Terms & Condition",
             href: "/pages/terms-condition",
         },
-        {
-            name: "Return Policy",
-            href: "/pages/return-policy",
-        },
-        {
-            name: "Support Policy",
-            href: "/pages/support-policy",
-        },
     ];
 
     return (

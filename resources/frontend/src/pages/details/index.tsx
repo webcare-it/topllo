@@ -151,14 +151,14 @@ export const ProductDetailsSkeleton = () => {
                 <div className="space-y-1.5 md:space-y-4 md:col-span-6">
                     <div>
                         <Skeleton className="h-8 w-3/4 mb-2" />
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                             <div className="flex gap-1">
                                 {[...Array(5)].map((_, i) => (
                                     <Skeleton key={i} className="w-4 h-4" />
                                 ))}
                             </div>
                             <Skeleton className="h-4 w-16" />
-                        </div>
+                        </div> */}
                     </div>
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">

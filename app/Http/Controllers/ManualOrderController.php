@@ -408,6 +408,10 @@ class ManualOrderController extends Controller
             return response()->json(['result' => false, 'message' => translate('Cart is empty')], 422);
         }
 
+        if (empty($settings['shipping_id'])) {
+            return response()->json(['result' => false, 'message' => translate('Please select a shipping cost before placing the order')], 422);
+        }
+
         $shippingAddress = [
             'name' => $request->customer_name,
             'email' => $request->customer_email,
@@ -480,7 +484,7 @@ class ManualOrderController extends Controller
 
                 $subtotal += $cartItem->price * $cartItem->quantity;
                 $tax += $cartItem->tax * $cartItem->quantity;
-                $shipping += $shippingPerItem * $cartItem->quantity;
+                $shipping += $shippingPerItem;
 
                 $detail = new OrderDetail();
                 $detail->order_id = $order->id;
@@ -491,7 +495,7 @@ class ManualOrderController extends Controller
                 $detail->tax = $cartItem->tax * $cartItem->quantity;
                 $detail->shipping_type = 'flat_rate';
                 $detail->product_referral_code = null;
-                $detail->shipping_cost = $shippingPerItem * $cartItem->quantity;
+                $detail->shipping_cost = $shippingPerItem;
                 $detail->quantity = $cartItem->quantity;
                 $detail->save();
 
@@ -512,6 +516,12 @@ class ManualOrderController extends Controller
         Cart::where('temp_user_id', $token)->delete();
         $request->session()->forget(['manual_order_discount', 'manual_order_shipping', 'manual_order_coupon_code', 'manual_order_coupon_discount']);
 
-        return response()->json(['result' => true, 'message' => translate('Manual order placed successfully'), 'order_code' => $order->code]);
+        return response()->json([
+            'result' => true,
+            'message' => translate('Manual order placed successfully'),
+            'order_code' => $order->code,
+            'redirect_url' => route('all_orders.index'),
+        ]);
     }
 }
+ 

@@ -30,6 +30,7 @@ import { OrderTrackIdPage } from "./order-track/id";
 import { ForgotPasswordPage } from "./auth/forgot";
 import { OrderTrackDetailsGuestPage } from "./order-track/guest-id";
 import { FlashDealPage } from "./flash-deal";
+import { HighlightsPage } from "./highlights";
 
 export const AppRoutes = () => {
     return (
@@ -57,6 +58,10 @@ export const AppRoutes = () => {
             <Route
                 path="/products/:id/:name"
                 element={<ProductDetailsPage />}
+            />
+            <Route
+                path="/products/highlights/:slug"
+                element={<HighlightsPage />}
             />
             <Route path="/flash-deal/:id/:name" element={<FlashDealPage />} />
             <Route path="/wishlist" element={<WishlistPublicPage />} />

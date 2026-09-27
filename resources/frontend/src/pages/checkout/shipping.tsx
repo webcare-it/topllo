@@ -23,7 +23,6 @@ export const ShippingCost = ({
     setSelectedShipping,
 }: Props) => {
     const isProcessingRef = useRef(false);
-
     const { data, isLoading } = useShippingCost();
     const { mutate, isPending } = useShippingCostMutation();
 
@@ -173,7 +172,7 @@ export const ShippingCost = ({
                         ))
                     ) : (
                         <div className="text-center text-muted-foreground">
-                            {"No shipping options found"}
+                            No shipping options found
                         </div>
                     )}
                 </RadioGroup>
@@ -184,8 +183,10 @@ export const ShippingCost = ({
 
 export const ShippingCostForDetails = () => {
     const config = useConfig();
-    const phone = getConfig(config, "contact_phone")?.value as string;
     const { data, isLoading } = useShippingCost();
+
+    const phone = getConfig(config, "contact_phone")?.value as string;
+    const bkashNumber = getConfig(config, "bkash_number")?.value as string;
 
     const shippingOption = useMemo(
         () => (data?.data as ShippingType[]) || [],
@@ -227,10 +228,10 @@ export const ShippingCostForDetails = () => {
             ))}
             <li className="flex items-center justify-between gap-4">
                 <div className="text-sm font-medium text-foreground">
-                    বিকাশ ও নগদ (পার্সোনাল) নাম্বার :
+                    Bkash Number :
                 </div>
                 <div className="text-base text-foreground font-semibold">
-                    {phone}
+                    {bkashNumber || phone}
                 </div>
             </li>
         </ul>

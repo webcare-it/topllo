@@ -14,7 +14,7 @@ export const Logo = ({ type }: Props) => {
     if (type === "DESKTOP") {
         return (
             <Link to="/">
-                <div className="w-40 h-12 relative overflow-hidden">
+                <div className="w-40 h-14 relative overflow-hidden">
                     <img
                         src={getImageUrl(logo as string)}
                         alt="logo"
@@ -46,7 +46,7 @@ export const Logo = ({ type }: Props) => {
     if (type === "MOBILE") {
         return (
             <Link to="/">
-                <div className="w-28 h-10 relative overflow-hidden">
+                <div className="w-28 h-12 relative overflow-hidden">
                     <img
                         src={getImageUrl(logo as string)}
                         alt="logo"

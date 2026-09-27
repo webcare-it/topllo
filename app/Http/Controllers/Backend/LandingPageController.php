@@ -61,7 +61,7 @@ class LandingPageController extends Controller
             'copyright_text' => 'nullable|string|max:255',
             'regular_price' => 'nullable|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
-            'products' => 'array',
+            'products' => 'required|array|min:1',
             'products.*' => 'exists:products,id',
         ]);
 
@@ -74,12 +74,6 @@ class LandingPageController extends Controller
         $landingPage->video_id = $request->video_id;
         $landingPage->feature_1 = $request->feature_1;
         $landingPage->feature_2 = $request->feature_2;
-        $landingPage->feature_3 = $request->feature_3;
-        $landingPage->feature_4 = $request->feature_4;
-        $landingPage->feature_5 = $request->feature_5;
-        $landingPage->feature_6 = $request->feature_6;
-        $landingPage->feature_7 = $request->feature_7;
-        $landingPage->feature_8 = $request->feature_8;
         $landingPage->description = $request->description;
         $landingPage->short_description = $request->short_description;
         $landingPage->copyright_text = $request->copyright_text;

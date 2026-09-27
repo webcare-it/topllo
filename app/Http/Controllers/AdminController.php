@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Order;
 use Artisan;
 use Cache;
 use CoreComponentRepository;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -17,7 +19,7 @@ class AdminController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function admin_dashboard(Request $request)
-    {   
+    {
         CoreComponentRepository::initializeCache();
         $root_categories = Category::where('level', 0)->get();
 
@@ -46,7 +48,36 @@ class AdminController extends Controller
             return $item;
         });
 
-        return view('backend.dashboard', compact('root_categories', 'cached_graph_data'));
+        $todays_orders_count = Order::whereDate('created_at', today())->count();
+        $pending_orders_count = Order::where('delivery_status', 'pending')->count();
+        $cancelled_orders_count = Order::where('delivery_status', 'cancelled')->count();
+        $delivered_orders_count = Order::where('delivery_status', 'delivered')->count();
+
+        $low_stock_query = Product::select('products.*', DB::raw('SUM(product_stocks.qty) as total_stock'))
+            ->join('product_stocks', 'product_stocks.product_id', '=', 'products.id')
+            ->where('products.published', 1)
+            ->where('products.low_stock_quantity', '>', 0)
+            ->groupBy('products.id')
+            ->havingRaw('SUM(product_stocks.qty) <= products.low_stock_quantity');
+
+        $low_stock_products = (clone $low_stock_query)->orderBy('total_stock', 'asc')->limit(10)->get();
+        $low_stock_products_count = (clone $low_stock_query)->get()->count();
+
+        $dropship_products_count = Product::whereNotNull('b_product_id')->where('auction_product', 0)->count();
+        $own_products_count = Product::whereNull('b_product_id')->where('auction_product', 0)->count();
+
+        return view('backend.dashboard', compact(
+            'root_categories',
+            'cached_graph_data',
+            'todays_orders_count',
+            'pending_orders_count',
+            'cancelled_orders_count',
+            'delivered_orders_count',
+            'low_stock_products',
+            'low_stock_products_count',
+            'dropship_products_count',
+            'own_products_count',
+        ));
     }
 
     function clearCache(Request $request)

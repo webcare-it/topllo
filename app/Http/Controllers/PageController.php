@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Page;
+use App\Models\Product;
 
 
 class PageController extends Controller
@@ -81,7 +82,8 @@ class PageController extends Controller
         $page = Page::where('slug', $id)->first();
         if($page != null){
           if ($page_name == 'home') {
-            return view('backend.website_settings.pages.home_page_edit', compact('page','lang'));
+            $products = Product::all();
+            return view('backend.website_settings.pages.home_page_edit', compact('page','lang','products'));
           }
           else{
             return view('backend.website_settings.pages.edit', compact('page','lang'));

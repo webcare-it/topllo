@@ -66,9 +66,23 @@ class HomeCategoryController extends Controller
                 $category_ids = [];
             }
 
+            // Normalize and remove invalid values
+            $category_ids = array_values(array_filter($category_ids, function ($id) {
+                return $id !== null && $id !== '';
+            }));
+
+            // If no categories are configured, return empty success response
+            if (empty($category_ids)) {
+                return response()->json([
+                    'data' => [],
+                    'success' => true,
+                    'status' => 200
+                ]);
+            }
+
             // Get categories with their products including subcategories and sub-subcategories
             $result = [];
-            $categories = Category::whereIn('id', $category_ids)->get();
+            $categories = Category::whereIn('id', $category_ids)->orderByRaw("FIELD(id, " . implode(',', $category_ids) . ")")->get();
             
             foreach ($categories as $category) {
                 // Get all subcategory IDs for this category (children categories)
@@ -91,7 +105,7 @@ class HomeCategoryController extends Controller
                     $productsQuery = $productsQuery->where('name', 'like', '%' . $request->name . '%');
                 }
                 
-                $products = $productsQuery->latest()->paginate(10);
+                $products = $productsQuery->latest()->paginate(6);
                 
                 // Use category name directly without translation
                 $categoryName = $category->name;

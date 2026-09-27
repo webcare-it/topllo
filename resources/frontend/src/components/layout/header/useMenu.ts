@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useCategories } from "@/api/queries/useCategories";
 import { slugify } from "@/helper";
+import { useAllUtility } from "@/api/queries/useAllUtility";
 
 export type CategoryType = {
     id: number;
@@ -56,9 +56,9 @@ export interface MenuItemType {
 }
 
 export const useMenuData = () => {
-    const { data, isLoading, error } = useCategories();
+    const { data, isLoading, error } = useAllUtility();
 
-    const categories = data?.data as CategoryType[];
+    const categories = data?.data?.categories?.data as CategoryType[];
 
     const menuData = useMemo(() => {
         if (!categories) return [];

@@ -276,6 +276,7 @@
     let isLoading = false;
     let hasMoreProducts = true;
     let searchTimeout;
+    let selectedShippingId = null;
 
 
 
@@ -310,8 +311,8 @@
             const hasVariant = product.variant_product === 1;
 
             const variantHtml = hasVariant ? `
-                <div class="me-2 flex-grow-1">
-                    <select style="height: 35px" class="form-control variant-select" data-product-id="${product.id}">
+                <div class="me-2 flex-grow-1 mb-2">
+                    <select class="form-control form-control-sm variant-select" data-product-id="${product.id}">
                         <option value="">{{ translate('Select variant') }}</option>
                         ${product.variants.map(variant => `<option value="${variant}">${variant}</option>`).join('')}
                     </select>
@@ -326,7 +327,7 @@
                             <div class="flex-shrink-0">
                                 <img src="${product.thumbnail}" 
                                      class="product-image" 
-                                     style="width: 130px; height: auto; object-fit: cover; overflow: hidden; border-top-left-radius: 8px; border-bottom-left-radius: 8px;" 
+                                     style="width: 130px; height: 150px; object-fit: inherit; overflow: hidden; border-top-left-radius: 8px; border-bottom-left-radius: 8px;" 
                                      alt="${product.name}">
                             </div>
 
@@ -343,19 +344,17 @@
 
                             <!-- Bottom: Variant + Quantity -->
                             <div class="mt-auto">
-                                <div class="d-flex align-items-center gap-2">
-                                    ${variantHtml}
-                                    <div class="${hasVariant ? 'flex-shrink-0' : 'flex-grow-1'}">
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" min="1" value="1" 
-                                                class="form-control product-quantity" 
+                                ${variantHtml}
+                                <div class="${hasVariant ? 'flex-shrink-0' : 'flex-grow-1'}">
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" min="1" value="1" 
+                                            class="form-control product-quantity" 
+                                            data-product-id="${product.id}">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-primary add-to-cart-button" 
                                                 data-product-id="${product.id}">
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-primary add-to-cart-button" 
-                                                    data-product-id="${product.id}">
-                                                {{ translate('Add') }}
-                                            </button>
-                                        </div>
+                                            {{ translate('Add') }}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -413,6 +412,7 @@
             container.append(line);
         });
 
+        selectedShippingId = cart.shipping_id || null;
         $('#summary-item-count').text(cart.item_count);
         $('#summary-sub-total').text(formatPrice(cart.sub_total));
         $('#summary-tax').text(formatPrice(cart.tax));
@@ -670,6 +670,11 @@
         const customerEmail = $('#customer-email').val().trim();
         const customerAddress = $('#customer-address').val().trim();
 
+        if (!selectedShippingId) {
+            AIZ.plugins.notify('danger', '{{ translate('Please select a shipping cost before placing the order') }}');
+            return;
+        }
+
         $.ajax({
             url: manualPlaceOrderUrl,
             method: 'POST',
@@ -682,7 +687,7 @@
             },
             success: function(response) {
                 AIZ.plugins.notify('success', response.message);
-                loadCart();
+                window.location.href = response.redirect_url || '{{ route('all_orders.index') }}';
             },
             error: function(xhr) {
                 AIZ.plugins.notify('danger', xhr.responseJSON?.message || '{{ translate('Unable to place order') }}');

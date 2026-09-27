@@ -31,15 +31,17 @@
             </select>
           </div>
           <div class="col-lg-2">
-            <div class="form-group mb-0">
-              <input type="text" class="form-control" id="search" name="search"@isset($sort_search) value="{{ $sort_search }}" @endisset placeholder="{{ translate('Type Order code & hit Enter') }}">
+            <div class="form-group mb-0">">
+              <input type="text" class="form-control" id="search" name="search"@isset($sort_search) value="{{ $sort_search }}" @endisset placeholder="{{ translate('Order Code & hit Enter') }}">
+
             </div>
           </div>
-          <div class="col-auto">
-            <div class="form-group mb-0">
-              <button type="submit" class="btn btn-primary">{{ translate('Filter') }}</button>
+            <div class="col-auto">
+                <div class="form-group mb-0">
+                    <button type="submit" class="btn btn-primary">{{ translate('Filter') }}</button>
+                    <a href="{{ url()->current() }}" class="btn btn-secondary ml-2">{{ translate('Reset') }}</a>
+                </div>
             </div>
-          </div>
       </div>
     </from>
 
@@ -55,6 +57,7 @@
                     <th data-breakpoints="md">{{translate('Delivery Status')}}</th>
                     <th data-breakpoints="md">{{translate('Payment Method')}}</th>
                     <th data-breakpoints="md">{{translate('Payment Status')}}</th>
+                    <th data-breakpoints="md">{{ translate('Date & Time') }}</th>
                     @if (addon_is_activated('refund_request'))
                         <th>{{translate('Refund')}}</th>
                     @endif
@@ -108,7 +111,9 @@
                                 @endif
                             </td>
                         @endif
-
+                        <td>
+                        {{ $order->created_at }}
+                        </td>
                         <td class="text-right">
                             <a class="btn btn-soft-primary btn-icon btn-circle btn-sm" href="{{route('inhouse_orders.show', encrypt($order->id))}}" title="{{ translate('View') }}">
                                 <i class="las la-eye"></i>

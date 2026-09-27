@@ -125,6 +125,74 @@ class ProductController extends Controller
         return view('backend.product.products.index', compact('products','type', 'col_name', 'query', 'seller_id', 'sort_search'));
     }
 
+    /**
+     * Display a listing of the products that were not sourced from Droploo
+     * (i.e. b_product_id is null) - the store's own catalogue.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function own_products(Request $request)
+    {
+        $col_name = null;
+        $query = null;
+        $seller_id = null;
+        $sort_search = null;
+        $products = Product::whereNull('b_product_id')->where('auction_product', 0);
+
+        if ($request->has('user_id') && $request->user_id != null) {
+            $products = $products->where('user_id', $request->user_id);
+            $seller_id = $request->user_id;
+        }
+        if ($request->search != null){
+            $products = $products
+                        ->where('name', 'like', '%'.$request->search.'%');
+            $sort_search = $request->search;
+        }
+        if ($request->type != null){
+            $var = explode(",", $request->type);
+            $col_name = $var[0];
+            $query = $var[1];
+            $products = $products->orderBy($col_name, $query);
+            $sort_type = $request->type;
+        }
+
+        $products = $products->orderBy('created_at', 'desc')->paginate(15);
+        $type = 'Own';
+
+        return view('backend.product.products.index', compact('products','type', 'col_name', 'query', 'seller_id', 'sort_search'));
+    }
+
+    public function dropshipping_products(Request $request)
+    {
+        $col_name = null;
+        $query = null;
+        $seller_id = null;
+        $sort_search = null;
+        $products = Product::whereNotNull('b_product_id')->where('auction_product', 0);
+
+        if ($request->has('user_id') && $request->user_id != null) {
+            $products = $products->where('user_id', $request->user_id);
+            $seller_id = $request->user_id;
+        }
+        if ($request->search != null){
+            $products = $products
+                        ->where('name', 'like', '%'.$request->search.'%');
+            $sort_search = $request->search;
+        }
+        if ($request->type != null){
+            $var = explode(",", $request->type);
+            $col_name = $var[0];
+            $query = $var[1];
+            $products = $products->orderBy($col_name, $query);
+            $sort_type = $request->type;
+        }
+
+        $products = $products->orderBy('created_at', 'desc')->paginate(15);
+        $type = 'Dropshipping';
+
+        return view('backend.product.products.index', compact('products','type', 'col_name', 'query', 'seller_id', 'sort_search'));
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -434,6 +502,7 @@ class ProductController extends Controller
                     }
                 }
                 $product_stock = ProductStock::where('product_id', $product->id)->where('variant', $str)->first();
+
                 if($product_stock == null){
                     $product_stock = new ProductStock;
                     $product_stock->product_id = $product->id;
@@ -877,9 +946,6 @@ class ProductController extends Controller
             }
         }
 
-        // FIX: Move this deletion AFTER we check if we're dealing with combinations
-        // This prevents deleting stocks when we shouldn't
-
         if (!empty($request->choice_no)) {
             $product->attributes = json_encode($request->choice_no);
         }
@@ -888,7 +954,6 @@ class ProductController extends Controller
         }
 
         $product->choice_options = json_encode($choice_options, JSON_UNESCAPED_UNICODE);
-
 
         //combinations start
         $options = array();
@@ -913,27 +978,13 @@ class ProductController extends Controller
         // Check if this is a Droploo variable product (has b_product_id)
         $isDroplooProduct = $product->b_product_id != null;
 
-        // FIX: For variant products with b_product_id, skip deletion and only update
-        // For regular variant products (without b_product_id), handle both creation and updates
+        // Handle variant products (regular products with colors/attributes)
         if(count($combinations[0]) > 0 && !$isDroplooProduct){
             $product->variant_product = 1;
 
-            // Check if we're updating existing stocks (flag set in form) or creating new ones
-            $hasExistingStocks = false;
-            foreach($request->all() as $key => $value) {
-                if(strpos($key, 'existing_stock_') === 0) {
-                    $hasExistingStocks = true;
-                    break;
-                }
-            }
-
-            // Only delete stocks if we're NOT updating existing ones
-            if(!$hasExistingStocks) {
-                // Delete old stocks only if we have new stocks to create
-                foreach ($product->stocks as $key => $stock) {
-                    $stock->delete();
-                }
-            }
+            // DELETE ALL existing stocks for this product first, then create new ones
+            // This ensures: removed colors are deleted, new colors are added, updates are clean
+            ProductStock::where('product_id', $product->id)->delete();
 
             foreach ($combinations as $key => $combination){
                 $str = '';
@@ -956,29 +1007,14 @@ class ProductController extends Controller
                 $field_str = str_replace('-', '_', $field_str);
                 $field_str = str_replace(' ', '_', $field_str);
 
-                // When updating existing stocks, skip if price is not set
-                if($hasExistingStocks && (!isset($request['price_'.$field_str]) || $request['price_'.$field_str] === null || $request['price_'.$field_str] === '')) {
-                    continue;
-                }
-
-                // When creating new stocks, price must be set or use unit_price as fallback
-                if(!$hasExistingStocks && (!isset($request['price_'.$field_str]) || $request['price_'.$field_str] === null || $request['price_'.$field_str] === '')) {
-                    $price = $request->unit_price; // Use default unit price
-                } else {
-                    $price = $request['price_'.$field_str];
-                }
-
-                $product_stock = ProductStock::where('product_id', $product->id)->where('variant', $str)->first();
-                if($product_stock == null){
-                    $product_stock = new ProductStock;
-                    $product_stock->product_id = $product->id;
-                }
-
+                // Create new stock
+                $product_stock = new ProductStock;
+                $product_stock->product_id = $product->id;
                 $product_stock->variant = $str;
-                $product_stock->price = $price;
-                $product_stock->sku = isset($request['sku_'.$field_str]) ? $request['sku_'.$field_str] : '';
-                $product_stock->qty = isset($request['qty_'.$field_str]) ? $request['qty_'.$field_str] : 0;
-                $product_stock->image = isset($request['img_'.$field_str]) ? $request['img_'.$field_str] : '';
+                $product_stock->price = $request['price_'.$field_str] ?? $request->unit_price;
+                $product_stock->sku = $request['sku_'.$field_str] ?? '';
+                $product_stock->qty = $request['qty_'.$field_str] ?? 0;
+                $product_stock->image = $request['img_'.$field_str] ?? '';
 
                 $product_stock->save();
             }
@@ -1037,17 +1073,17 @@ class ProductController extends Controller
             }
         }
         else{
-            $product_stock = ProductStock::where('product_id', $product->id)->first();
-                if($product_stock == null){
-                    $product_stock = new ProductStock;
-                    $product_stock->product_id = $product->id;
-                }
-                $product_stock->variant = '';
-                $product_stock->price = $request->unit_price;
-                // Use sku_single if available, otherwise fallback to sku
-                $product_stock->sku = $request->sku_single ?? $request->sku ?? '';
-                $product_stock->qty = $request->current_stock ?? 0; // Handle null qty
-                $product_stock->save();
+            // For non-variable products, delete old stock and create new one
+            ProductStock::where('product_id', $product->id)->delete();
+
+            $product_stock = new ProductStock;
+            $product_stock->product_id = $product->id;
+            $product_stock->variant = '';
+            $product_stock->price = $request->unit_price;
+            // Use sku_single if available, otherwise fallback to sku
+            $product_stock->sku = $request->sku_single ?? $request->sku ?? '';
+            $product_stock->qty = $request->current_stock ?? 0; // Handle null qty
+            $product_stock->save();
         }
 
         $product->save();
@@ -1156,8 +1192,14 @@ class ProductController extends Controller
                 $product_stock->price       = $stock->price;
                 $product_stock->sku         = $stock->sku;
                 $product_stock->qty         = $stock->qty;
-                $product_stock->save();
+                $product_stock->image       = $stock->image;
 
+                // Copy wholesale price if it exists
+                if($stock->wholesale_price) {
+                    $product_stock->wholesale_price = $stock->wholesale_price;
+                }
+
+                $product_stock->save();
             }
 
             flash(translate('Product has been duplicated successfully'))->success();

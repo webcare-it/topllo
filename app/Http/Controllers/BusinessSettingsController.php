@@ -18,6 +18,12 @@ class BusinessSettingsController extends Controller
         CoreComponentRepository::initializeCache();
     	return view('backend.setup_configurations.general_settings');
     }
+    public function credentials(Request $request)
+    {
+        CoreComponentRepository::instantiateShopRepository();
+        CoreComponentRepository::initializeCache();
+    	return view('backend.setup_configurations.credentials');
+    }
 
     public function activation(Request $request)
     {
@@ -274,22 +280,25 @@ class BusinessSettingsController extends Controller
         return back();
     }
 
-    public function facebook_pixel_update(Request $request)
+    public function facebook_domain_verification_update(Request $request)
     {
         foreach ($request->types as $key => $type) {
-                $this->overWriteEnvFile($type, $request[$type]);
-        }
-
-        $business_settings = BusinessSetting::where('type', 'facebook_pixel')->first();
-
-        if ($request->has('facebook_pixel')) {
-            $business_settings->value = 1;
+            $business_settings = BusinessSetting::where('type', $type)->first();
+            if(!$business_settings) {
+                $business_settings = new BusinessSetting;
+                $business_settings->type = $type;
+            }
+            $business_settings->value = $request[$type];
             $business_settings->save();
         }
-        else{
-            $business_settings->value = 0;
-            $business_settings->save();
+
+        $business_settings = BusinessSetting::where('type', 'facebook_domain_verification')->first();
+        if(!$business_settings) {
+            $business_settings = new BusinessSetting;
+            $business_settings->type = 'facebook_domain_verification';
         }
+        $business_settings->value = $request->has('facebook_domain_verification') ? 1 : 0;
+        $business_settings->save();
 
         Artisan::call('cache:clear');
 

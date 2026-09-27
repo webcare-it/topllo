@@ -50,6 +50,7 @@ Route::group(['prefix' => 'v2'], function() {
     Route::get('business-settings', 'Api\V2\BusinessSettingController@index');
 
     Route::get('categories/featured', 'Api\V2\CategoryController@featured');
+    Route::get('all-utility', 'Api\V2\CategoryController@all_utility');
     Route::get('categories/home', 'Api\V2\CategoryController@home');
     Route::get('categories/top', 'Api\V2\CategoryController@top');
     Route::apiResource('categories', 'Api\V2\CategoryController')->only('index')->middleware('api.cache');
@@ -91,6 +92,7 @@ Route::group(['prefix' => 'v2'], function() {
     Route::get('products/related/{id}', 'Api\V2\ProductController@related')->name('products.related');
 
     Route::get('home/products', 'Api\V2\ProductController@homeProducts')->middleware('api.cache');
+    Route::get('products/highlights/{slug}', 'Api\V2\ProductController@productHighlight')->middleware('api.cache');
 
     Route::get('products/featured-from-seller/{id}', 'Api\V2\ProductController@newFromSeller')->name('products.featuredromSeller');
     Route::get('products/search', 'Api\V2\ProductController@search');

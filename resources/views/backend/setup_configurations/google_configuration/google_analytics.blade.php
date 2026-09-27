@@ -5,18 +5,18 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0 h6">{{ translate('Facebook Pixel Setting') }}</h5>
+                    <h5 class="mb-0 h6">{{ translate('Facebook Domain Verification') }}</h5>
                 </div>
                 <div class="card-body">
-                    <form class="form-horizontal" action="{{ route('facebook_pixel.update') }}" method="POST">
+                    <form class="form-horizontal" action="{{ route('facebook_domain_verification.update') }}" method="POST">
                         @csrf
                         <div class="form-group row">
                             <div class="col-lg-3">
-                                <label class="col-from-label">{{ translate('Facebook Pixel') }}</label>
+                                <label class="col-from-label">{{ translate('Facebook Domain Verification') }}</label>
                             </div>
                             <div class="col-md-7">
                                 <label class="aiz-switch aiz-switch-success mb-0">
-                                    <input value="1" name="facebook_pixel" type="checkbox" @if (get_setting('facebook_pixel') == 1)
+                                    <input value="1" name="facebook_domain_verification" type="checkbox" @if (get_setting('facebook_domain_verification') == 1)
                                         checked
                                     @endif>
                                     <span class="slider round"></span>
@@ -24,12 +24,21 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <input type="hidden" name="types[]" value="FACEBOOK_PIXEL_ID">
+                            <input type="hidden" name="types[]" value="fb_domain_code">
                             <div class="col-lg-3">
-                                <label class="col-from-label">{{ translate('Facebook Pixel ID') }}</label>
+                                <label class="col-from-label">{{ translate('Facebook Domain Verification Code') }}</label>
                             </div>
                             <div class="col-md-7">
-                                <input type="text" class="form-control" name="FACEBOOK_PIXEL_ID" value="{{  env('FACEBOOK_PIXEL_ID') }}" placeholder="{{ translate('Facebook Pixel ID') }}" required>
+                                <input 
+                                    type="text" class="form-control" name="fb_domain_code" value="{{  get_setting('fb_domain_code') }}" placeholder="{{ translate('Facebook Domain Verification Code') }}"
+                                    pattern="^[a-zA-Z0-9]+$"
+                                    title="Enter a valid Facebook Domain Verification Code consisting of alphanumeric characters only."
+                                    required
+                                    >
+                                    <small class="form-text text-info">
+                                        {{ translate('Enter the Facebook Domain Verification Code provided by Facebook. This code is used to verify your domain ownership for Facebook services.') }}
+                                        <strong>Examples: eu2xxxxxxxxxx</strong>
+                                    </small>
                             </div>
                         </div>
                         <div class="form-group mb-0 text-right">
@@ -40,24 +49,8 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card bg-gray-light">
-                <div class="card-header">
-                    <h5 class="mb-0 h6">{{ translate('Please be carefull when you are configuring Facebook pixel.') }}</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group mar-no">
-                        <li class="list-group-item text-dark">1. {{ translate('Log in to Facebook and go to your Ads Manager account') }}.</li>
-                        <li class="list-group-item text-dark">2. {{ translate('Open the Navigation Bar and select Events Manager') }}.</li>
-                        <li class="list-group-item text-dark">3. {{ translate('Copy your Pixel ID from underneath your Site Name and paste the number into Facebook Pixel ID field') }}.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
+        <div class="card">
+            <div class="card-header">
                     <h5 class="mb-0 h6">{{translate('Google Tag Manager Setting')}}</h5>
                 </div>
                 <div class="card-body">
@@ -82,7 +75,20 @@
                                 <label class="col-from-label">{{translate('Tracking ID')}}</label>
                             </div>
                             <div class="col-md-7">
-                                <input type="text" class="form-control" name="TRACKING_ID" value="{{  env('TRACKING_ID') }}" placeholder="{{ translate('Tracking ID') }}" required>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="TRACKING_ID"
+                                    value="{{ env('TRACKING_ID') }}"
+                                    placeholder="{{ translate('Tracking ID') }}"
+                                    pattern="^(GTM-[A-Z0-9]+|G-[A-Z0-9]+|UA-[0-9\-]+)$"
+                                    title="Enter a valid Google Tracking ID (e.g., GTM-XXXXXX, G-XXXXXX, UA-XXXXXX-X)"
+                                    required
+                                >
+                                <small class="form-text text-info">
+                                    {{ translate('Enter a valid Google Tag Manager or Google Analytics Tracking ID.') }}
+                                        <strong>Examples: GTM-XXXXXX, G-XXXXXX</strong>
+                                </small>
                             </div>
                         </div>
                         <div class="form-group mb-0 text-right">
@@ -93,4 +99,5 @@
             </div>
         </div>
     </div>
+
 @endsection

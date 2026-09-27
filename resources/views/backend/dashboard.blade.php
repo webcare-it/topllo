@@ -1,17 +1,103 @@
 @extends('backend.layouts.app')
 
 @section('content')
-@if(env('MAIL_USERNAME') == null && env('MAIL_PASSWORD') == null)
-    <div class="">
-        <div class="alert alert-danger d-flex align-items-center">
-            {{translate('Please Configure SMTP Setting to work all email sending functionality')}},
-            <a class="alert-link ml-2" href="{{ route('smtp_settings.index') }}">{{ translate('Configure Now') }}</a>
-        </div>
-    </div>
-@endif
+
 @if(Auth::user()->user_type == 'admin' || in_array('1', json_decode(Auth::user()->staff->role->permissions)))
 <div class="row gutters-10">
-    <div class="col-lg-6">
+    <div class="col-6 col-md-3">
+        <a href="{{ route('all_orders.index') }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate("Today's Orders") }}</div>
+                <div class="h3 fw-700 mb-0 text-dark">{{ $todays_orders_count }}</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ route('all_orders.index', ['delivery_status' => 'pending']) }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate('Pending Orders') }}</div>
+                <div class="h3 fw-700 mb-0 text-warning">{{ $pending_orders_count }}</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ route('all_orders.index', ['delivery_status' => 'cancelled']) }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate('Cancelled Orders') }}</div>
+                <div class="h3 fw-700 mb-0 text-danger">{{ $cancelled_orders_count }}</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ route('all_orders.index', ['delivery_status' => 'delivered']) }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate('Delivered Orders') }}</div>
+                <div class="h3 fw-700 mb-0 text-success">{{ $delivered_orders_count }}</div>
+            </div>
+        </a>
+    </div>
+</div>
+<div class="row gutters-10">
+    <div class="col-10 col-md-6">
+        <a href="{{ route('products.own') }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate("Own Products") }}</div>
+                <div class="h3 fw-700 mb-0 text-dark">{{ $own_products_count }}</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-10 col-md-6">
+        <a href="{{ route('products.dropshipping') }}" class="d-block">
+            <div class="bg-white border rounded-lg mb-4 overflow-hidden p-3">
+                <div class="text-muted fs-12">{{ translate('Dropship Products') }}</div>
+                <div class="h3 fw-700 mb-0 text-success">{{ $dropship_products_count }}</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@if($low_stock_products_count > 0)
+<div class="row gutters-10">
+    <div class="col-12">
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fs-14 text-warning">
+                    <i class="las la-exclamation-triangle"></i>
+                    {{ translate('Low Stock Alert') }}
+                    <span class="badge badge-warning ml-1">{{ $low_stock_products_count }}</span>
+                </h6>
+                <a href="{{ route('stock_report.index') }}" class="fs-12">{{ translate('View all') }}</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table aiz-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('Product') }}</th>
+                                <th>{{ translate('Remaining Stock') }}</th>
+                                <th>{{ translate('Low Stock Threshold') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($low_stock_products as $product)
+                                <tr>
+                                    <td>{{ $product->getTranslation('name') }}</td>
+                                    <td class="text-danger fw-700">{{ $product->total_stock }}</td>
+                                    <td>{{ $product->low_stock_quantity }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<div class="row gutters-10">
+    <div class="col-lg-8">
         <div class="row gutters-10">
             <div class="col-6">
                 <div class="bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
@@ -74,25 +160,15 @@
         </div>
     </div>
 
-    <div class="col-lg-6">
+    <div class="col-lg-4">
         <div class="row gutters-10">
-            <div class="col-6">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0 fs-14">{{ translate('Products') }}</h6>
                     </div>
                     <div class="card-body">
                         <canvas id="pie-1" class="w-100" height="305"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0 fs-14">{{ translate('Sellers') }}</h6>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="pie-2" class="w-100" height="305"></canvas>
                     </div>
                 </div>
             </div>

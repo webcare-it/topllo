@@ -61,7 +61,7 @@ export const HeaderMobile = () => {
     return (
         <>
             <nav
-                className={`md:hidden py-1 bg-background/95 backdrop-blur-3xl sticky top-0 left-0 right-0 z-[60] border-b border-border`}
+                className={`md:hidden py-1 bg-background text-foreground backdrop-blur-3xl sticky top-0 left-0 right-0 z-[60] border-b border-border`}
             >
                 {triggerAnimation ? (
                     <AnimatePresence mode="wait">
@@ -80,23 +80,30 @@ export const HeaderMobile = () => {
                                 <div>
                                     <Logo type="MOBILE" />
                                 </div>
-                                <div className="flex justify-end items-center gap-2.5">
+
+                                <div className="flex justify-end items-center gap-2">
+                                    {/* Search */}
                                     <button
                                         onClick={handleSearchClick}
-                                        className="p-2 hover:bg-accent rounded-md transition-colors"
+                                        className="p-2.5 border border-border bg-transparent text-foreground rounded-lg transition-colors hover:bg-primary hover:text-primary-foreground"
                                     >
                                         <Search
                                             size={36}
                                             strokeWidth={2.5}
-                                            className="h-5 w-5 text-gray-900 hover:text-primary"
+                                            className="h-5 w-5"
                                         />
                                     </button>
+
+                                    {/* Track Order */}
                                     <Link
                                         to="/track-order"
-                                        className="p-1 hover:bg-accent rounded-md transition-colors"
+                                        className="p-2.5 border border-border bg-transparent text-foreground rounded-lg transition-colors hover:bg-primary hover:text-primary-foreground"
                                     >
                                         <TrackIcon height="20px" width="30px" />
                                     </Link>
+
+                                    {/* User */}
+                                    <UserProfile />
                                 </div>
                             </motion.div>
                         ) : (
@@ -109,12 +116,13 @@ export const HeaderMobile = () => {
                                     duration: 0.3,
                                     ease: "easeInOut",
                                 }}
-                                className="flex items-center justify-between px-4 gap-2"
+                                className="flex items-center justify-between px-4 gap-2 py-1"
                             >
                                 <ArrowLeft
                                     onClick={handleBackClick}
-                                    className="h-6 w-6 text-muted-foreground"
+                                    className="h-6 w-6 text-foreground"
                                 />
+
                                 {searchBar}
                             </motion.div>
                         )}
@@ -124,31 +132,39 @@ export const HeaderMobile = () => {
                         <div>
                             <Logo type="MOBILE" />
                         </div>
-                        <div className="flex justify-end items-center gap-2.5">
+
+                        <div className="flex justify-end items-center gap-2">
+                            {/* Search */}
                             <button
                                 onClick={handleSearchClick}
-                                className="p-1 hover:bg-accent rounded-md transition-colors hover:text-primary"
+                                className="p-2.5 border border-border bg-transparent text-foreground rounded-lg transition-colors hover:bg-primary hover:text-primary-foreground"
                             >
                                 <Search
                                     size={36}
                                     strokeWidth={2.5}
-                                    className="h-5 w-5 text-gray-900 hover:text-primary"
+                                    className="h-5 w-5"
                                 />
                             </button>
+
+                            {/* Track Order */}
                             <Link
                                 to="/track-order"
-                                className="p-1 hover:bg-accent rounded-md transition-colors hover:text-primary"
+                                className="p-2.5 border border-border bg-transparent text-foreground rounded-lg transition-colors hover:bg-primary hover:text-primary-foreground"
                             >
                                 <TrackIcon height="20px" width="30px" />
                             </Link>
+
+                            {/* User */}
+                            <UserProfile />
                         </div>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between px-4 gap-2">
+                    <div className="flex items-center justify-between px-4 gap-2 py-1">
                         <ArrowLeft
                             onClick={handleBackClick}
-                            className="h-6 w-6 text-muted-foreground"
+                            className="h-6 w-6 text-foreground"
                         />
+
                         {searchBar}
                     </div>
                 )}

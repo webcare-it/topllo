@@ -32,6 +32,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
 
     Route::get('/products/admin', 'ProductController@admin_products')->name('products.admin');
     Route::get('/products/all', 'ProductController@all_products')->name('products.all');
+    Route::get('/products/own', 'ProductController@own_products')->name('products.own');
+    Route::get('/products/dropshipping', 'ProductController@dropshipping_products')->name('products.dropshipping');
     Route::get('/products/create', 'ProductController@create')->name('products.create');
     Route::post('/products/store', 'ProductController@store')->name('products.store');
     Route::post('/products/{id}/update', 'ProductController@update')->name('products.update');
@@ -80,6 +82,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::post('/business-settings/update', 'BusinessSettingsController@update')->name('business_settings.update');
     Route::post('/business-settings/update/activation', 'BusinessSettingsController@updateActivationSettings')->name('business_settings.update.activation');
     Route::get('/general-setting', 'BusinessSettingsController@general_setting')->name('general_setting.index');
+    Route::get('/credentials', 'BusinessSettingsController@credentials')->name('general_setting.credentials');
     Route::get('/activation', 'BusinessSettingsController@activation')->name('activation.index');
     Route::get('/payment-method', 'BusinessSettingsController@payment_method')->name('payment_method.index');
     Route::get('/file_system', 'BusinessSettingsController@file_system')->name('file_system.index');
@@ -95,7 +98,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::post('/facebook_chat', 'BusinessSettingsController@facebook_chat_update')->name('facebook_chat.update');
     Route::get('/facebook-comment', 'BusinessSettingsController@facebook_comment')->name('facebook-comment');
     Route::post('/facebook-comment', 'BusinessSettingsController@facebook_comment_update')->name('facebook-comment.update');
-    Route::post('/facebook_pixel', 'BusinessSettingsController@facebook_pixel_update')->name('facebook_pixel.update');
+    Route::post('/facebook_domain_verification', 'BusinessSettingsController@facebook_domain_verification_update')->name('facebook_domain_verification.update');
 
     Route::post('/env_key_update', 'BusinessSettingsController@env_key_update')->name('env_key_update.update');
     Route::post('/payment_method_update', 'BusinessSettingsController@payment_method_update')->name('payment_method.update');
@@ -133,6 +136,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
 
     Route::resource('roles', 'RoleController');
 
+    Route::get('/fraud_checker', 'FraudCheckerController@index')->name('fraud_checker');
+
+
     Route::resource('staffs', 'StaffController');
 
     Route::resource('flash_deals', 'FlashDealController');
@@ -152,6 +158,14 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     // All Orders
     Route::get('/all_orders', 'OrderController@all_orders')->name('all_orders.index');
     Route::get('/all_orders/{id}/show', 'OrderController@all_orders_show')->name('all_orders.show');
+
+    // Droploo Product Sales
+    Route::get('/droploo_orders', 'OrderController@droploo_orders')->name('droploo_orders.index');
+    Route::get('/droploo_orders/{id}/show', 'OrderController@droploo_orders_show')->name('droploo_orders.show');
+
+    // Own Product Sales
+    Route::get('/own_orders', 'OrderController@own_orders')->name('own_orders.index');
+    Route::get('/own_orders/{id}/show', 'OrderController@own_orders_show')->name('own_orders.show');
 
     // Manual Order
     Route::get('/manual-orders', 'ManualOrderController@index')->name('manual_orders.index');
@@ -201,6 +215,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     //Reports
     Route::get('/stock_report', 'ReportController@stock_report')->name('stock_report.index');
     Route::get('/in_house_sale_report', 'ReportController@in_house_sale_report')->name('in_house_sale_report.index');
+    Route::get('/own_products_sale_report', 'ReportController@own_products_sale_report')->name('own_products_sale_report.index');
     Route::get('/seller_sale_report', 'ReportController@seller_sale_report')->name('seller_sale_report.index');
     Route::get('/wish_report', 'ReportController@wish_report')->name('wish_report.index');
     Route::get('/user_search_report', 'ReportController@user_search_report')->name('user_search_report.index');

@@ -86,10 +86,24 @@ class OrderController extends Controller
         $order_type = null;
 
         $orders = Order::with('orderDetails.product')->orderBy('id', 'desc');
-        if ($request->has('search')) {
+        if ($request->has('search') && $request->search != null) {
             $sort_search = $request->search;
-            $orders = $orders->where('code', 'like', '%' . $sort_search . '%');
+
+            $orders = $orders->where(function ($query) use ($sort_search) {
+                $query->where('code', 'like', '%' . $sort_search . '%')
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.phone') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.name') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.address') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereHas('combinedOrder', function ($q) use ($sort_search) {
+                        $q->where(function ($query) use ($sort_search) {
+                            $query->whereRaw("JSON_EXTRACT(shipping_address, '$.phone') LIKE ?", ['%' . $sort_search . '%'])
+                                  ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.name') LIKE ?", ['%' . $sort_search . '%'])
+                                  ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.address') LIKE ?", ['%' . $sort_search . '%']);
+                        });
+                    });
+            });
         }
+        
         if ($request->order_type != null) {
             $orders = $orders->where('order_type', $request->order_type);
             $order_type = $request->order_type;
@@ -106,6 +120,108 @@ class OrderController extends Controller
     }
 
     public function all_orders_show($id)
+    {
+        $order = Order::findOrFail(decrypt($id));
+        $order_shipping_address = $order->shipping_address ? json_decode($order->shipping_address) : null;
+        $city = optional($order_shipping_address)->city;
+        $delivery_boys = $city ? User::where('city', $city)->where('user_type', 'delivery_boy')->get() : collect();
+
+        return view('backend.sales.all_orders.show', compact('order', 'delivery_boys'));
+    }
+
+    // Droploo Product Sales — orders that contain at least one Droploo-sourced product (b_product_id is set)
+    public function droploo_orders(Request $request)
+    {
+        CoreComponentRepository::instantiateShopRepository();
+
+        $date = $request->date;
+        $sort_search = null;
+        $delivery_status = null;
+        $order_type = null;
+
+        $orders = Order::with('orderDetails.product')->orderBy('id', 'desc')
+            ->whereHas('orderDetails.product', function ($q) {
+                $q->whereNotNull('b_product_id');
+            });
+
+        if ($request->has('search') && $request->search != null) {
+            $sort_search = $request->search;
+
+            $orders = $orders->where(function ($query) use ($sort_search) {
+                $query->where('code', 'like', '%' . $sort_search . '%')
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.phone') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.name') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.address') LIKE ?", ['%' . $sort_search . '%']);
+            });
+        }
+
+        if ($request->order_type != null) {
+            $orders = $orders->where('order_type', $request->order_type);
+            $order_type = $request->order_type;
+        }
+        if ($request->delivery_status != null) {
+            $orders = $orders->where('delivery_status', $request->delivery_status);
+            $delivery_status = $request->delivery_status;
+        }
+        if ($date != null) {
+            $orders = $orders->where('created_at', '>=', date('Y-m-d', strtotime(explode(" to ", $date)[0])))->where('created_at', '<=', date('Y-m-d', strtotime(explode(" to ", $date)[1])));
+        }
+        $orders = $orders->paginate(15);
+        return view('backend.sales.droploo_orders.index', compact('orders', 'sort_search', 'delivery_status', 'order_type', 'date'));
+    }
+
+    public function droploo_orders_show($id)
+    {
+        $order = Order::findOrFail(decrypt($id));
+        $order_shipping_address = $order->shipping_address ? json_decode($order->shipping_address) : null;
+        $city = optional($order_shipping_address)->city;
+        $delivery_boys = $city ? User::where('city', $city)->where('user_type', 'delivery_boy')->get() : collect();
+
+        return view('backend.sales.all_orders.show', compact('order', 'delivery_boys'));
+    }
+
+    // Own Product Sales — orders that contain at least one own (non-Droploo) product (b_product_id is null)
+    public function own_orders(Request $request)
+    {
+        CoreComponentRepository::instantiateShopRepository();
+
+        $date = $request->date;
+        $sort_search = null;
+        $delivery_status = null;
+        $order_type = null;
+
+        $orders = Order::with('orderDetails.product')->orderBy('id', 'desc')
+            ->whereHas('orderDetails.product', function ($q) {
+                $q->whereNull('b_product_id');
+            });
+
+        if ($request->has('search') && $request->search != null) {
+            $sort_search = $request->search;
+
+            $orders = $orders->where(function ($query) use ($sort_search) {
+                $query->where('code', 'like', '%' . $sort_search . '%')
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.phone') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.name') LIKE ?", ['%' . $sort_search . '%'])
+                    ->orWhereRaw("JSON_EXTRACT(shipping_address, '$.address') LIKE ?", ['%' . $sort_search . '%']);
+            });
+        }
+
+        if ($request->order_type != null) {
+            $orders = $orders->where('order_type', $request->order_type);
+            $order_type = $request->order_type;
+        }
+        if ($request->delivery_status != null) {
+            $orders = $orders->where('delivery_status', $request->delivery_status);
+            $delivery_status = $request->delivery_status;
+        }
+        if ($date != null) {
+            $orders = $orders->where('created_at', '>=', date('Y-m-d', strtotime(explode(" to ", $date)[0])))->where('created_at', '<=', date('Y-m-d', strtotime(explode(" to ", $date)[1])));
+        }
+        $orders = $orders->paginate(15);
+        return view('backend.sales.own_orders.index', compact('orders', 'sort_search', 'delivery_status', 'order_type', 'date'));
+    }
+
+    public function own_orders_show($id)
     {
         $order = Order::findOrFail(decrypt($id));
         $order_shipping_address = $order->shipping_address ? json_decode($order->shipping_address) : null;

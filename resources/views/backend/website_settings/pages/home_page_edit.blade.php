@@ -192,6 +192,138 @@
 			</div>
 		</div>
 
+		{{-- Home Best Selling Products --}}
+		<div class="card">
+			<div class="card-header">
+				<h6 class="mb-0">{{ translate('Home Best Selling Products (Max 6)') }}</h6>
+			</div>
+			<div class="card-body">
+				<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+					<div class="alert alert-info">
+						{{ translate('The products selected here will be displayed in the best selling section of the home page.') }}
+					</div>
+					@csrf
+					<div class="form-group">
+						<div class="col-md-12">
+							<input type="hidden" name="types[]" value="home_best_selling_products">
+							@php
+								$saved_best_selling = json_decode(get_setting('home_best_selling_products'), true) ?? [];
+							@endphp
+							<select class="form-control aiz-selectpicker" name="home_best_selling_products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple required>
+								@foreach($products as $product)
+									<option value="{{ $product->id }}" {{ in_array($product->id, $saved_best_selling) ? 'selected' : '' }}>
+									{{ $product->name }}
+								</option>
+								@endforeach
+							</select>
+						</div>
+					</div>
+					<div class="text-right">
+						<button type="submit" class="btn btn-primary">{{ translate('Update') }}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		{{-- Home Today's Deals Products --}}
+		<div class="card">
+			<div class="card-header">
+				<h6 class="mb-0">{{ translate('Home Today\'s Deals Products (Max 6)') }}</h6>
+			</div>
+			<div class="card-body">
+				<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+					<div class="alert alert-info">
+						{{ translate('The products selected here will be displayed in the today\'s deals section of the home page.') }}
+					</div>
+					@csrf
+					<div class="form-group">
+						<div class="col-md-12">
+							<input type="hidden" name="types[]" value="home_today_deals_products">
+							@php
+								$saved_today_deals = json_decode(get_setting('home_today_deals_products'), true) ?? [];
+							@endphp
+							<select class="form-control aiz-selectpicker" name="home_today_deals_products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple required>
+								@foreach($products as $product)
+									<option value="{{ $product->id }}" {{ in_array($product->id, $saved_today_deals) ? 'selected' : '' }}>
+									{{ $product->name }}
+								</option>
+								@endforeach
+							</select>
+						</div>
+					</div>
+					<div class="text-right">
+						<button type="submit" class="btn btn-primary">{{ translate('Update') }}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		{{-- Home New Arrival Products --}}
+		<div class="card">
+			<div class="card-header">
+				<h6 class="mb-0">{{ translate('Home New Arrival Products (Max 6)') }}</h6>
+			</div>
+			<div class="card-body">
+				<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+					<div class="alert alert-info">
+						{{ translate('The products selected here will be displayed in the new arrival section of the home page.') }}
+					</div>
+					@csrf
+					<div class="form-group">
+						<div class="col-md-12">
+							<input type="hidden" name="types[]" value="home_new_arrival_products">
+							@php
+								$saved_new_arrival = json_decode(get_setting('home_new_arrival_products'), true) ?? [];
+							@endphp
+							<select class="form-control aiz-selectpicker" name="home_new_arrival_products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple required>
+								@foreach($products as $product)
+									<option value="{{ $product->id }}" {{ in_array($product->id, $saved_new_arrival) ? 'selected' : '' }}>
+									{{ $product->name }}
+								</option>
+								@endforeach
+							</select>
+						</div>
+					</div>
+					<div class="text-right">
+						<button type="submit" class="btn btn-primary">{{ translate('Update') }}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		{{-- Home Featured Products --}}
+		<div class="card">
+			<div class="card-header">
+				<h6 class="mb-0">{{ translate('Home Featured Products (Max 6)') }}</h6>
+			</div>
+			<div class="card-body">
+				<form action="{{ route('business_settings.update') }}" method="POST" enctype="multipart/form-data">
+					<div class="alert alert-info">
+						{{ translate('The products selected here will be displayed in the featured section of the home page.') }}
+					</div>
+					@csrf
+					<div class="form-group">
+						<div class="col-md-12">
+							<input type="hidden" name="types[]" value="home_featured_products">
+							@php
+								$saved_featured = json_decode(get_setting('home_featured_products'), true) ?? [];
+							@endphp
+							<select class="form-control aiz-selectpicker" name="home_featured_products[]" id="products" data-live-search="true" data-selected-text-format="count" multiple required>
+								@foreach($products as $product)
+									<option value="{{ $product->id }}" {{ in_array($product->id, $saved_featured) ? 'selected' : '' }}>
+									{{ $product->name }}
+								</option>
+								@endforeach
+							</select>
+						</div>
+					</div>
+					<div class="text-right">
+						<button type="submit" class="btn btn-primary">{{ translate('Update') }}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
 		{{-- Home Banner 2 --}}
 		<div class="card">
 			<div class="card-header">

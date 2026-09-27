@@ -114,7 +114,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-md-3 col-form-label" for="signinSrEmail">{{translate('Thumbnail Image')}} <small>(290x300)</small></label>
+                            <label class="col-md-3 col-form-label" for="signinSrEmail">{{translate('Thumbnail Image')}} <small>(600x600)</small></label>
                             <div class="col-md-8">
                                 <div class="input-group" data-toggle="aizuploader" data-type="image">
                                     <div class="input-group-prepend">
@@ -152,6 +152,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <!-- Conditional Product Variation - hide when b_product_id exists -->
                 @if(!isset($product->b_product_id))
                 <div class="card">
@@ -282,16 +283,8 @@
                                     <input type="number" lang="en" min="0" value="{{ $product->stocks->first() ? $product->stocks->first()->qty : 0 }}" step="1" placeholder="{{ translate('Quantity') }}" name="current_stock" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label class="col-md-3 col-from-label">
-                                    {{translate('SKU')}}
-                                </label>
-                                <div class="col-md-6">
-                                    <input type="text" placeholder="{{ translate('SKU') }}" value="{{ $product->stocks->first() ? $product->stocks->first()->sku : '' }}" name="sku_single" class="form-control">
-                                </div>
-                            </div>
                         </div>
-                        
+
                         @if ($product->variant_product == 1)
                         <!-- SKU Combination Section -->
                         <div class="form-group row">
@@ -303,6 +296,42 @@
                             </div>
                         </div>
                         @endif
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 h6">{{translate('Stock Visibility State')}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label class="col-md-6 col-from-label">{{translate('Show Stock Quantity')}}</label>
+                            <div class="col-md-6">
+                                <label class="aiz-switch aiz-switch-success mb-0">
+                                    <input type="radio" name="stock_visibility_state" value="quantity" @if($product->stock_visibility_state == 'quantity' || $product->stock_visibility_state == null) checked @endif>
+                                    <span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-md-6 col-from-label">{{translate('Show In Stock Text')}}</label>
+                            <div class="col-md-6">
+                                <label class="aiz-switch aiz-switch-success mb-0">
+                                    <input type="radio" name="stock_visibility_state" value="text" @if($product->stock_visibility_state == 'text') checked @endif>
+                                    <span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-md-6 col-from-label">{{translate('Hide Stock')}}</label>
+                            <div class="col-md-6">
+                                <label class="aiz-switch aiz-switch-success mb-0">
+                                    <input type="radio" name="stock_visibility_state" value="hide" @if($product->stock_visibility_state == 'hide') checked @endif>
+                                    <span></span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">

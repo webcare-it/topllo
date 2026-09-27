@@ -6,11 +6,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Navigation, Pagination, Autoplay } from "swiper/modules";
 import { slugify } from "@/helper";
 import { Skeleton } from "@/components/common/skeleton";
-import { useCategories } from "@/api/queries/useCategories";
 import { Link } from "react-router-dom";
 import type { CategoryType } from "@/type";
 import { OptimizedImage } from "@/components/common/optimized-image";
 import { allProduct } from "@/assets";
+import { useAllUtility } from "@/api/queries/useAllUtility";
 
 const CategorySkeleton = () => (
     <div className="flex flex-col items-center px-1 mx-1 sm:px-2 sm:mx-2 min-w-fit sm:min-w-0">
@@ -20,9 +20,9 @@ const CategorySkeleton = () => (
 );
 
 export const CategoriesSection = () => {
-    const { data, isLoading } = useCategories();
+    const { data, isLoading } = useAllUtility();
 
-    const categories = (data?.data as CategoryType[]) || [];
+    const categories = (data?.data?.categories?.data as CategoryType[]) || [];
     const totalSlidesCount = (categories?.length || 0) + 1;
     const enableLoop = totalSlidesCount > 10;
 

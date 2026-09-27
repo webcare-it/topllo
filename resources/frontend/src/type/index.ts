@@ -37,6 +37,7 @@ export interface ProductType {
     discount_price: number | string | null;
     calculable_price: number;
     main_price: string;
+    in_stock: boolean;
     rating: number;
     rating_count: number;
     variant_product: number;
@@ -85,6 +86,7 @@ export interface ProductDetailsType {
     category_name: string;
     seller_id: number;
     shop_id: number;
+    in_stock: boolean;
     review: number;
     shop_name: string;
     min_qty: number;

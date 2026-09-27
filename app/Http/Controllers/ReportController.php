@@ -37,6 +37,18 @@ class ReportController extends Controller
         return view('backend.reports.in_house_sale_report', compact('products','sort_by'));
     }
 
+    public function own_products_sale_report(Request $request)
+    {
+        $sort_by = null;
+        $products = Product::orderBy('num_of_sale', 'desc')->whereNull('b_product_id');
+        if ($request->has('category_id')){
+            $sort_by = $request->category_id;
+            $products = $products->where('category_id', $sort_by);
+        }
+        $products = $products->paginate(15);
+        return view('backend.reports.own_products_sale_report', compact('products','sort_by'));
+    }
+
     public function seller_sale_report(Request $request)
     {
         $sort_by =null;

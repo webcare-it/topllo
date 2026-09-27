@@ -5,14 +5,12 @@ import { getConfig } from "@/helper";
 import { useConfig } from "@/hooks/useConfig";
 import { useGetWishlist } from "@/controllers/wishlistController";
 import { useGetCart } from "@/controllers/cartController";
-import { ScrollToTop } from "@/components/common/scroll-to-top";
+import { SocialMessage } from "@/components/common/social-message";
 import { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Footer } from "./footer";
 import nprogress from "nprogress";
 import "nprogress/nprogress.css";
-import { CookieProvider } from "@/provider/cookie";
-import { CookieConsent } from "../common/cookie-consent";
 nprogress.configure({ showSpinner: false });
 
 interface Props {
@@ -60,7 +58,7 @@ const BaseLayoutContent = ({
 
             <section
                 className={`${
-                    isContainer ? "container md:mx-auto" : ""
+                    isContainer ? "container mx-auto px-0 xl:px-6" : ""
                 } flex-1 md:pt-0 md:pb-0`}
             >
                 {children}
@@ -69,17 +67,11 @@ const BaseLayoutContent = ({
                 <Footer isShowNewsletterSection={isShowNewsletterSection} />
                 <FooterMobile />
             </footer>
-
-            <ScrollToTop />
+            <SocialMessage />
         </section>
     );
 };
 
 export const BaseLayout = (props: Props) => {
-    return (
-        <CookieProvider>
-            <CookieConsent />
-            <BaseLayoutContent {...props} />{" "}
-        </CookieProvider>
-    );
+    return <BaseLayoutContent {...props} />;
 };

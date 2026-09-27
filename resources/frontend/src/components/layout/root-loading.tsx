@@ -73,7 +73,7 @@ export const RootPageLoading = () => {
                 </div>
                 {/* // category menu */}
                 <div className="w-full py-10 md:py-16">
-                    <div className="hidden md:flex gap-2 overflow-hidden">
+                    <div className="hidden md:flex gap-2 overflow-hidden justify-center">
                         {Array.from({ length: 10 }).map((_, index) => (
                             <div
                                 key={index}
@@ -84,7 +84,7 @@ export const RootPageLoading = () => {
                             </div>
                         ))}
                     </div>
-                    <div className="flex md:hidden gap-2 overflow-hidden">
+                    <div className="flex md:hidden gap-2 overflow-hidden justify-center">
                         {Array.from({ length: 3 }).map((_, index) => (
                             <div
                                 key={index}
