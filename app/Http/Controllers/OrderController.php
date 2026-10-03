@@ -933,14 +933,14 @@ class OrderController extends Controller
                 $appKey = get_setting('droploo_app_key', '');
                 $appSecret = get_setting('droploo_app_secret', '');
                 $userName = get_setting('droploo_username', '');
-                $apiEndpoint = 'https://backend.droploo.com/api/product/create-order';
+                $apiEndpoint = 'https://nittoz.com/api/v1/dropshippers/legacy/place-order';
 
                 $order_shipping_address = json_decode($order->shipping_address);
 
                 // Add null check for shipping address
                 if (!$order_shipping_address) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'Invalid shipping address data'
@@ -948,6 +948,7 @@ class OrderController extends Controller
                 }
 
                 $payload = [
+                    'type'                  => 'ENTERPRISE',
                     'invoice_number'        => ($order->code ?? $order->id),
                     'customer_name'         => $order_shipping_address->name ?? '',
                     'customer_phone'        => $order_shipping_address->phone ?? '',
@@ -979,8 +980,8 @@ class OrderController extends Controller
                 ];
                 // Validate that we have products to transfer
                 if (empty($payload['products'])) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'No valid products with b_product_id found for transfer'
@@ -989,8 +990,8 @@ class OrderController extends Controller
 
                 // Add validation for required fields
                 if (empty($appKey) || empty($appSecret) || empty($userName)) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'Missing Droploo API credentials'
@@ -1030,7 +1031,8 @@ class OrderController extends Controller
                     $newLine->save();
 
                     // calculate new order totals
-                    $newOrderTotal += $line->quantity * $line->price;
+                    // order_details.price is already the line total (unit price * quantity)
+                    $newOrderTotal += $line->price;
                     $newOrderDiscount += $order->coupon_discount ?? 0;
 
                     // remove from original order
@@ -1039,7 +1041,7 @@ class OrderController extends Controller
 
                 // recalc original order totals
                 foreach ($order->orderDetails as $line) {
-                    $originalTotal += $line->quantity * $line->price;
+                    $originalTotal += $line->price;
                     $originalDiscount += $order->coupon_discount ?? 0;
                 }
 
@@ -1058,14 +1060,14 @@ class OrderController extends Controller
                 $appKey = get_setting('droploo_app_key', '');
                 $appSecret = get_setting('droploo_app_secret', '');
                 $userName = get_setting('droploo_username', '');
-                $apiEndpoint = 'https://backend.droploo.com/api/product/create-order';
+                $apiEndpoint = 'https://nittoz.com/api/v1/dropshippers/legacy/place-order';
 
                 $order_shipping_address = json_decode($newOrder->shipping_address);
 
                 // Add null check for shipping address
                 if (!$order_shipping_address) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'Invalid shipping address data for new order'
@@ -1073,6 +1075,7 @@ class OrderController extends Controller
                 }
 
                 $payload = [
+                    'type'                  => 'ENTERPRISE',
                     'invoice_number'        => ($newOrder->code ?? $newOrder->id),
                     'customer_name'         => $order_shipping_address->name ?? '',
                     'customer_phone'        => $order_shipping_address->phone ?? '',
@@ -1105,8 +1108,8 @@ class OrderController extends Controller
 
                 // Validate that we have products to transfer
                 if (empty($payload['products'])) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'No valid products with b_product_id found for transfer in new order'
@@ -1115,11 +1118,11 @@ class OrderController extends Controller
 
                 // Add validation for required fields
                 if (empty($appKey) || empty($appSecret) || empty($userName)) {
-                    // Commit transaction before returning
-                    DB::commit();
+                    // Nothing was sent; undo the transfer status/split before returning
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
-                        'message' => 'Missing Droploo API credentials for new order'
+                        'message' => 'Missing API credentials for new order'
                     ]);
                 }
 
@@ -1157,8 +1160,11 @@ class OrderController extends Controller
         }
 
         // ---------------- PRODUCT STOCK / SELLER LOGIC ----------------
+        // On a partial transfer only the split-off order's lines were transferred.
+        $statusOrder = isset($newOrder) ? $newOrder : $order;
+
         if (Auth::user()->user_type == 'seller') {
-            foreach ($order->orderDetails->where('seller_id', Auth::user()->id) as $orderDetail) {
+            foreach ($statusOrder->orderDetails->where('seller_id', Auth::user()->id) as $orderDetail) {
                 $orderDetail->delivery_status = $request->status;
                 $orderDetail->save();
 
@@ -1174,7 +1180,7 @@ class OrderController extends Controller
                 }
             }
         } else {
-            foreach ($order->orderDetails as $orderDetail) {
+            foreach ($statusOrder->orderDetails as $orderDetail) {
                 $orderDetail->delivery_status = $request->status;
                 $orderDetail->save();
 
