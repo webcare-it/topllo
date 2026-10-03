@@ -22,8 +22,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
 
     Route::get('/droploo/products', [ProductController::class, 'droplooProductList'])->name('droploo.products.all')->middleware(['auth', 'admin']);
     Route::get('/droploo/product/add/{id}', [ProductController::class, 'droplooProductAdd'])->name('droploo.products.add')->middleware(['auth', 'admin']);
+    Route::post('/droploo/product/import/{id}', [ProductController::class, 'droplooImportOne'])->name('droploo.products.import_one')->middleware(['auth', 'admin']);
+    Route::post('/droploo/products/import-finish', [ProductController::class, 'droplooImportFinish'])->name('droploo.products.import_finish')->middleware(['auth', 'admin']);
 
-    Route::resource('categories', 'CategoryController');
+    Route::resource('categories', 'CategoryController')->except(['destroy']);
     Route::delete('/categories/{category}', 'CategoryController@destroy')->name('categories.destroy');
     Route::post('/categories/featured', 'CategoryController@updateFeatured')->name('categories.featured');
     Route::post('/bulk-category-delete', 'CategoryController@bulk_delete')->name('categories.bulk-delete');
@@ -208,7 +210,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::get('/orders/{id}/edit', 'OrderController@edit')->name('orders.edit');
     Route::put('/orders/{id}/update', 'OrderController@update')->name('orders.update');
     Route::put('/orders/{id}', 'OrderController@update')->name('orders.update.put');
-    Route::get('/invoice/download/{id}', 'InvoiceController@invoice_download')->name('invoice.download');
 
     Route::post('/pay_to_seller', 'CommissionController@pay_to_seller')->name('commissions.pay_to_seller');
 
@@ -222,14 +223,14 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::get('/wallet-history', 'ReportController@wallet_transaction_history')->name('wallet-history.index');
 
     //Blog Section
-    Route::resource('blog-category', 'BlogCategoryController');
+    Route::resource('blog-category', 'BlogCategoryController')->except(['destroy']);
     Route::delete('/blog-category/destroy/{id}', 'BlogCategoryController@destroy')->name('blog-category.destroy');
-    Route::resource('blog', 'BlogController');
+    Route::resource('blog', 'BlogController')->except(['destroy']);
     Route::delete('/blog/destroy/{id}', 'BlogController@destroy')->name('blog.destroy');
     Route::post('/blog/change-status', 'BlogController@change_status')->name('blog.change-status');
 
     //Coupons
-    Route::resource('coupon', 'CouponController');
+    Route::resource('coupon', 'CouponController')->except(['destroy']);
     Route::delete('/coupon/destroy/{id}', 'CouponController@destroy')->name('coupon.destroy');
     Route::post('/coupon/get_coupon_form', 'CouponController@get_coupon_form')->name('coupon.get_coupon_form');
     Route::post('/coupon/get_coupon_form_edit', 'CouponController@get_coupon_form_edit')->name('coupon.get_coupon_form_edit');
@@ -244,7 +245,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::post('support_ticket/reply', 'SupportTicketController@admin_store')->name('support_ticket.admin_store');
 
     //Pickup_Points
-    Route::resource('pick_up_points', 'PickupPointController');
+    Route::resource('pick_up_points', 'PickupPointController')->except(['edit', 'destroy']);
     Route::get('/pick_up_points/edit/{id}', 'PickupPointController@edit')->name('pick_up_points.edit');
     Route::delete('/pick_up_points/destroy/{id}', 'PickupPointController@destroy')->name('pick_up_points.destroy');
 
@@ -255,7 +256,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::post('/sellers/profile_modal', 'SellerController@profile_modal')->name('sellers.profile_modal');
     Route::post('/sellers/approved', 'SellerController@updateApproved')->name('sellers.approved');
 
-    Route::resource('attributes', 'AttributeController');
+    Route::resource('attributes', 'AttributeController')->except(['edit', 'destroy']);
     Route::get('/attributes/edit/{id}', 'AttributeController@edit')->name('attributes.edit');
     Route::delete('/attributes/destroy/{id}', 'AttributeController@destroy')->name('attributes.destroy');
 
@@ -302,7 +303,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
     Route::resource('states','StateController');
 	Route::post('/states/status', 'StateController@updateStatus')->name('states.status');
 
-    Route::resource('cities', 'CityController');
+    Route::resource('cities', 'CityController')->except(['edit', 'destroy']);
     Route::get('/cities/edit/{id}', 'CityController@edit')->name('cities.edit');
     Route::delete('/cities/destroy/{id}', 'CityController@destroy')->name('cities.destroy');
     Route::post('/cities/status', 'CityController@updateStatus')->name('cities.status');
@@ -312,17 +313,21 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function(
 
     // uploaded files
     Route::any('/uploaded-files/file-info', 'AizUploadController@file_info')->name('uploaded-files.info');
-    Route::resource('/uploaded-files', 'AizUploadController');
+    Route::resource('/uploaded-files', 'AizUploadController')->except(['destroy']);
     Route::delete('/uploaded-files/destroy/{id}', 'AizUploadController@destroy')->name('uploaded-files.destroy');
 
     // Aiz Uploader
-    Route::post('/aiz-uploader', 'AizUploadController@show_uploader')->name('aiz-uploader');
-    Route::post('/aiz-uploader/upload', 'AizUploadController@upload')->name('aiz-uploader.upload');
-    Route::get('/aiz-uploader/get_uploaded_files', 'AizUploadController@get_uploaded_files')->name('aiz-uploader.get_uploaded_files');
-    Route::post('/aiz-uploader/get_file_by_ids', 'AizUploadController@get_file_by_ids')->name('aiz-uploader.get_file_by_ids');
-    Route::delete('/aiz-uploader/destroy/{id}', 'AizUploadController@destroy')->name('aiz-uploader.destroy');
+    Route::post('/aiz-uploader', 'AizUploadController@show_uploader')->name('admin.aiz-uploader');
+    Route::post('/aiz-uploader/upload', 'AizUploadController@upload')->name('admin.aiz-uploader.upload');
+    Route::get('/aiz-uploader/get_uploaded_files', 'AizUploadController@get_uploaded_files')->name('admin.aiz-uploader.get_uploaded_files');
+    Route::post('/aiz-uploader/get_file_by_ids', 'AizUploadController@get_file_by_ids')->name('admin.aiz-uploader.get_file_by_ids');
+    Route::delete('/aiz-uploader/destroy/{id}', 'AizUploadController@destroy')->name('admin.aiz-uploader.destroy');
 
     Route::get('/all-notification', 'NotificationController@index')->name('admin.all-notification');
 
     Route::get('/cache-cache', 'AdminController@clearCache')->name('cache.clear');
+
+    // Database reset tool - owner account only, gated by ALLOW_DB_RESET in .env
+    Route::get('/system/database-cleanup', 'SystemController@databaseCleanupIndex')->name('database-cleanup.index')->middleware(['super_admin']);
+    Route::post('/system/database-cleanup', 'SystemController@databaseCleanup')->name('database-cleanup.run')->middleware(['super_admin']);
 });

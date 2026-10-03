@@ -89,8 +89,6 @@
                                 <th>{{ translate('Product') }}</th>
                                 <th>{{ translate('Quantity') }}</th>
                                 <th>{{ translate('Unit Price') }}</th>
-                                <th>{{ translate('Discount') }}</th>
-                                <th>{{ translate('Discounted Amount') }}</th>
                                 <th>{{ translate('Total') }}</th>
                             </tr>
                         </thead>
@@ -112,12 +110,6 @@
                                     <input type="number" class="form-control" name="order_details[{{ $key }}][price]" value="{{ $orderDetail->price / $orderDetail->quantity }}" step="0.01">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" name="order_details[{{ $key }}][discount]" value="{{ 0 }}" step="0.01">
-                                </td>
-                                <td>
-                                    <input type="number" readonly class="form-control" name="" value="{{ $order->discount ?? 0 }}" step="0.01">
-                                </td>
-                                <td>
                                     {{ single_price($orderDetail->price) }}
                                 </td>
                             </tr>
@@ -127,6 +119,11 @@
                 </div>
             </div>
             
+            <div class="form-group">
+                <label for="discount">{{ translate('Discount') }}</label>
+                <input type="number" class="form-control" id="discount" name="discount" value="{{ $order->discount ?? 0 }}" min="0" step="0.01">
+            </div>
+
             <div class="form-group">
                 <label for="note">{{ translate('Order Note') }}</label>
                 <textarea class="form-control" id="note" name="note" rows="3">{{ $order->notes }}</textarea>

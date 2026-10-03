@@ -99,7 +99,7 @@ export const CategoriesSection = () => {
                                       <OptimizedImage
                                           src={category?.icon || ""}
                                           alt={category?.name}
-                                          className="w-full h-full object-contain absolute"
+                                          className="w-full h-full object-cover absolute inset-0"
                                       />
                                   </div>
                                   <span className="mt-1 sm:mt-2 text-xs font-medium text-foreground group-hover:text-primary text-center w-20 sm:w-24 md:w-28 line-clamp-1 transition-all duration-300 group-hover:underline">

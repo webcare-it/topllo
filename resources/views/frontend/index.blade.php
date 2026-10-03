@@ -45,16 +45,16 @@
                         <ul class="list-unstyled mb-0 row gutters-5">
                             @foreach ($featured_categories as $key => $category)
                                 <li class="minw-0 col-4 col-md mt-3">
-                                    <a href="{{ route('products.category', $category->slug) }}" class="d-block rounded bg-white p-2 text-reset shadow-sm">
+                                    <a href="{{ route('products.category', $category->slug) }}" class="d-block rounded bg-white p-0 text-reset shadow-sm overflow-hidden">
                                         <img
                                             src="{{ static_asset('assets/img/placeholder.jpg') }}"
                                             data-src="{{ uploaded_asset($category->banner) }}"
                                             alt="{{ $category->getTranslation('name') }}"
-                                            class="lazyload img-fit"
-                                            height="78"
+                                            class="lazyload img-fit d-block"
+                                            style="width:100%;height:78px;object-fit:cover;"
                                             onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder-rect.jpg') }}';"
                                         >
-                                        <div class="text-truncate fs-12 fw-600 mt-2 opacity-70">{{ $category->getTranslation('name') }}</div>
+                                        <div class="text-truncate fs-12 fw-600 p-2 opacity-70">{{ $category->getTranslation('name') }}</div>
                                     </a>
                                 </li>
                             @endforeach

@@ -506,15 +506,19 @@ class ManualOrderController extends Controller
             }
 
             $order->shipping_cost = $shipping;
+            $orderDiscount = $settings['discount_type'] === 'percentage'
+                ? ($subtotal * $settings['discount']) / 100
+                : $settings['discount'];
+            $order->discount = $orderDiscount;
             $order->coupon_discount = $settings['coupon_discount'];
-            $order->grand_total = max(0, $subtotal + $tax + $shipping - $settings['discount'] - $settings['coupon_discount']);
+            $order->grand_total = max(0, $subtotal + $tax + $shipping - $orderDiscount - $settings['coupon_discount']);
             $order->save();
             $combinedOrder->grand_total += $order->grand_total;
         }
 
         $combinedOrder->save();
         Cart::where('temp_user_id', $token)->delete();
-        $request->session()->forget(['manual_order_discount', 'manual_order_shipping', 'manual_order_coupon_code', 'manual_order_coupon_discount']);
+        $request->session()->forget(['manual_order_discount', 'manual_order_discount_type', 'manual_order_shipping', 'manual_order_coupon_code', 'manual_order_coupon_discount']);
 
         return response()->json([
             'result' => true,

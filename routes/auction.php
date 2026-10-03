@@ -29,12 +29,12 @@ Route::group(['prefix' => 'seller', 'middleware' => ['seller', 'verified', 'user
 });
 
 Route::group(['middleware' => ['auth']], function() {
-    Route::resource('auction_products', 'AuctionProductController');
+    Route::resource('auction_products', 'AuctionProductController')->except(['update', 'edit', 'destroy']);
     Route::post('/auction_products/update/{id}', 'AuctionProductController@update')->name('auction_products.update');
     Route::get('/auction_products/edit/{id}', 'AuctionProductController@edit')->name('auction_products.edit');
     Route::delete('/auction_products/destroy/{id}', 'AuctionProductController@destroy')->name('auction_products.destroy');
 
-    Route::resource('product_bids', 'AuctionProductBidController');
+    Route::resource('product_bids', 'AuctionProductBidController')->except(['destroy']);
     Route::delete('/product_bids/destroy/{id}', 'AuctionProductBidController@destroy')->name('product_bids.destroy');
 
     Route::resource('auction_product_bids', 'AuctionProductBidController');

@@ -103,7 +103,7 @@ class OrderController extends Controller
                     });
             });
         }
-        
+
         if ($request->order_type != null) {
             $orders = $orders->where('order_type', $request->order_type);
             $order_type = $request->order_type;
@@ -420,13 +420,13 @@ class OrderController extends Controller
              if(Auth::user()){
                    $carts = Cart::where('user_id', Auth::user()->id)
             ->get();
-         
+
 
         if ($carts->isEmpty()) {
             flash(translate('Your cart is empty'))->warning();
             return redirect()->route('home');
         }
-        
+
 
         $address = Address::where('id', $carts[0]['address_id'])->first();
         $shippingAddress = [];
@@ -565,10 +565,10 @@ class OrderController extends Controller
         $combined_order->save();
 
         $request->session()->put('combined_order_id', $combined_order->id);
-                 
+
              }else{
-                 
-                 
+
+
          // $tempid=Cart::select('temp_user_id')->get();
         // $tempids=$tempid->temp_user_id;
         $carts = Cart::where('temp_user_id',$request->session()->get('temp_user_id'))
@@ -583,7 +583,7 @@ class OrderController extends Controller
         $address=null;
 
         $shippingAddress = [];
-       
+
         if ($address == null) {
             $shippingAddress['name']        = $request->name;
             $shippingAddress['email']       = $request->email;
@@ -597,7 +597,7 @@ class OrderController extends Controller
             //     $shippingAddress['lat_lang'] = $address->latitude . ',' . $address->longitude;
             // }
         }
-        
+
 
         $combined_order = new CombinedOrder;
         $combined_order->user_id ="NULL";
@@ -664,23 +664,23 @@ class OrderController extends Controller
                 $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                 $order_detail->tax = $cartItem['tax'] * $cartItem['quantity'];
                 $order_detail->shipping_type =$request->city;
-              
-               
+
+
                 $order_detail->product_referral_code = $cartItem['product_referral_code'];
                 if($request->city=="In Dhaka City"){
-                     
+
                       $order_detail->shipping_cost = 60/$cat;
                      $shipping +=60/$cat;
                 }else if($request->city=="sub city Of Dhaka"){
                     $order_detail->shipping_cost = 100/$cat;
                      $shipping +=100/$cat;
-                    
+
                 }else if($request->city=="Out Of Dhaka City"){
-                    
+
                      $order_detail->shipping_cost = 120/$cat;
                      $shipping +=120/$cat;
                 }
-               
+
                 //End of storing shipping cost
 
                 $order_detail->quantity = $cartItem['quantity'];
@@ -730,15 +730,15 @@ class OrderController extends Controller
         }
 
         $combined_order->save();
-        
+
          $request->session()->put('combined_order_id', $combined_order->id);
-        
+
          flash(translate("Your order has been placed successfully"))->success();
                     return redirect()->route('order_confirmed');
-         
-     
+
+
              }
-      
+
     }
 
     /**
@@ -771,7 +771,7 @@ class OrderController extends Controller
     public function update(Request $request, $id)
     {
         $order = Order::findOrFail($id);
-        
+
         // Update customer information only if provided
         if ($request->hasAny(['customer_name', 'customer_email', 'customer_phone', 'customer_address'])) {
             $shipping_address = json_decode($order->shipping_address, true);
@@ -791,7 +791,7 @@ class OrderController extends Controller
                 $order->shipping_address = json_encode($shipping_address);
             }
         }
-        
+
         // Update order status fields only if provided
         if ($request->has('payment_status')) {
             $order->payment_status = $request->payment_status;
@@ -805,7 +805,7 @@ class OrderController extends Controller
         if ($request->has('note')) {
             $order->notes = $request->note;
         }
-        
+
         // Update order details (quantity, price, discount) only if provided
         $subtotal = 0;
         $shipping = 0;
@@ -816,13 +816,11 @@ class OrderController extends Controller
                 if ($orderDetail) {
                     $quantity = (int) ($orderDetailData['quantity'] ?? $orderDetail->quantity);
                     $unitPrice = (float) ($orderDetailData['price'] ?? ($orderDetail->price / max($orderDetail->quantity, 1)));
-                    $discount = (float) ($orderDetailData['discount'] ?? 0);
-                    
                     // Update order detail
                     $orderDetail->quantity = $quantity;
-                    $orderDetail->price = $unitPrice * $quantity - $discount;
+                    $orderDetail->price = $unitPrice * $quantity;
                     $orderDetail->save();
-                    
+
                     // Add to subtotal
                     $subtotal += $orderDetail->price;
                     $shipping += $orderDetail->shipping_cost;
@@ -830,19 +828,24 @@ class OrderController extends Controller
                 }
             }
         }
-        
+
         // Update order grand total only if order details were updated
         if ($subtotalUpdated) {
-            $order->grand_total = $subtotal + ($shipping ?? 0) + ($order->tax ?? 0);
+            $discount = $request->has('discount') ? max(0, (float) $request->discount) : (float) ($order->discount ?? 0);
             $order->discount = $discount;
+            $order->grand_total = max(0, $subtotal + $shipping + $order->orderDetails()->sum('tax') - $discount - ($order->coupon_discount ?? 0));
+        } elseif ($request->has('discount')) {
+            $newDiscount = max(0, (float) $request->discount);
+            $order->grand_total = max(0, $order->grand_total + ($order->discount ?? 0) - $newDiscount);
+            $order->discount = $newDiscount;
         }
-        
+
         if ($order->save()) {
             flash(translate('Order has been updated successfully'))->success();
         } else {
             flash(translate('Something went wrong'))->error();
         }
-        
+
         return redirect()->route('all_orders.index');
     }
 
@@ -901,15 +904,15 @@ class OrderController extends Controller
 {
     // Begin database transaction
     DB::beginTransaction();
-    
+
     try {
-        
+
         $order = Order::findOrFail($request->order_id);
         $order->delivery_viewed = '0';
         $order->save();
 
         $shippingCharge = $order->orderDetails()->sum('shipping_cost');
-        
+
         // Use 'status' parameter from the AJAX request
         $newStatus = $request->status;
 
@@ -933,7 +936,7 @@ class OrderController extends Controller
                 $apiEndpoint = 'https://backend.droploo.com/api/product/create-order';
 
                 $order_shipping_address = json_decode($order->shipping_address);
-                
+
                 // Add null check for shipping address
                 if (!$order_shipping_address) {
                     // Commit transaction before returning
@@ -951,7 +954,7 @@ class OrderController extends Controller
                     'delivery_cost'         => (int) $shippingCharge,
                     'customer_address'      => $order_shipping_address->address ?? '',
                     'price'                 => (int) $order->grand_total,
-                    'discount'              => 0,
+                    'discount'              => $order->discount ?? 0,
                     'advance'               => 0,
                     'product_quantity'      => $order->orderDetails->sum('quantity'),
                     'delivery_charge_type'  => 'COD',
@@ -1058,7 +1061,7 @@ class OrderController extends Controller
                 $apiEndpoint = 'https://backend.droploo.com/api/product/create-order';
 
                 $order_shipping_address = json_decode($newOrder->shipping_address);
-                
+
                 // Add null check for shipping address
                 if (!$order_shipping_address) {
                     // Commit transaction before returning
@@ -1076,7 +1079,7 @@ class OrderController extends Controller
                     'delivery_cost'         => (int) $originalShipping,
                     'customer_address'      => $order_shipping_address->address ?? '',
                     'price'                 => (int) $newOrder->grand_total,
-                    'discount'              => 0,
+                    'discount'              => $newOrder->discount ?? 0,
                     'advance'               => 0,
                     'product_quantity'      => $newOrder->orderDetails->sum('quantity'),
                     'delivery_charge_type'  => 'COD',
@@ -1201,7 +1204,7 @@ class OrderController extends Controller
 
         // Commit transaction
         DB::commit();
-        
+
         // Check if this is an AJAX request
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -1209,14 +1212,14 @@ class OrderController extends Controller
                 'message' => translate('Delivery status has been updated')
             ]);
         }
-        
+
         flash(translate('Order has been status update successfully'))->success();
         return back();
-        
+
     } catch (\Exception $e) {
         // Rollback transaction on error
         DB::rollBack();
-        
+
         // Check if this is an AJAX request
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -1224,7 +1227,7 @@ class OrderController extends Controller
                 'message' => $e->getMessage()
             ]);
         }
-        
+
         flash(translate('An error occurred while updating delivery status: ') . $e->getMessage())->error();
         return back();
     }
@@ -1234,7 +1237,7 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($request->order_id);
         $shipping_address = json_decode($order->shipping_address);
-        
+
         if (!$shipping_address) {
             return response()->json([
                 'success' => false,
@@ -1289,16 +1292,16 @@ class OrderController extends Controller
     public function get_steadfast_tracking_info(Request $request)
     {
         $order = Order::findOrFail($request->order_id);
-        
+
         if (!$order->tracking_code) {
             return response()->json([
                 'success' => false,
                 'message' => translate('No tracking code available for this order')
             ]);
         }
-        
+
         $tracking_response = SteadfastUtility::get_tracking_info($order->tracking_code);
-        
+
         if (isset($tracking_response['status']) && $tracking_response['status'] == 200) {
             return response()->json([
                 'success' => true,
@@ -1312,24 +1315,24 @@ class OrderController extends Controller
             ]);
         }
     }
-    
+
     public function cancel_steadfast_order(Request $request)
     {
         $order = Order::findOrFail($request->order_id);
-        
+
         if (!$order->tracking_code) {
             return response()->json([
                 'success' => false,
                 'message' => translate('No tracking code available for this order')
             ]);
         }
-        
+
         $cancel_response = SteadfastUtility::cancel_order($order->tracking_code);
-        
+
         if (isset($cancel_response['status']) && $cancel_response['status'] == 200) {
             $order->delivery_status = 'cancelled';
             $order->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => translate('Order cancelled successfully')
@@ -1341,27 +1344,27 @@ class OrderController extends Controller
             ]);
         }
     }
-    
+
     public function reschedule_steadfast_delivery(Request $request)
     {
         $order = Order::findOrFail($request->order_id);
-        
+
         if (!$order->tracking_code) {
             return response()->json([
                 'success' => false,
                 'message' => translate('No tracking code available for this order')
             ]);
         }
-        
+
         $reschedule_payload = [
             'tracking_code' => $order->tracking_code,
             'reschedule_date' => $request->reschedule_date,
             'reschedule_time' => $request->reschedule_time,
             'note' => $request->note
         ];
-        
+
         $reschedule_response = SteadfastUtility::reschedule_delivery($reschedule_payload);
-        
+
         if (isset($reschedule_response['status']) && $reschedule_response['status'] == 200) {
             return response()->json([
                 'success' => true,
@@ -1374,7 +1377,7 @@ class OrderController extends Controller
             ]);
         }
     }
-    
+
     public function update_tracking_code(Request $request) {
         try {
             $order = Order::findOrFail($request->order_id);
@@ -1388,7 +1391,7 @@ class OrderController extends Controller
                     'message' => translate('Order tracking code has been updated')
                 ]);
             }
-            
+
             return 1;
         } catch (\Exception $e) {
             // Check if this is an AJAX request
@@ -1398,7 +1401,7 @@ class OrderController extends Controller
                     'message' => $e->getMessage()
                 ]);
             }
-            
+
             return 0;
         }
     }
@@ -1467,7 +1470,7 @@ class OrderController extends Controller
 
                 }
             }
-            
+
             // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -1475,7 +1478,7 @@ class OrderController extends Controller
                     'message' => translate('Payment status has been updated')
                 ]);
             }
-            
+
             return 1;
         } catch (\Exception $e) {
             // Check if this is an AJAX request
@@ -1485,7 +1488,7 @@ class OrderController extends Controller
                     'message' => $e->getMessage()
                 ]);
             }
-            
+
             return 0;
         }
     }

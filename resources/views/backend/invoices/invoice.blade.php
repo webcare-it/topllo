@@ -172,6 +172,10 @@
 							            <td class="currency">{{ single_price($order->orderDetails->sum('tax')) }}</td>
 							        </tr>
 				                    <tr class="border-bottom">
+							            <th class="gry-color text-left">{{ translate('Discount') }}</th>
+							            <td class="currency">{{ single_price($order->discount) }}</td>
+							        </tr>
+				                    <tr class="border-bottom">
 							            <th class="gry-color text-left">{{ translate('Coupon Discount') }}</th>
 							            <td class="currency">{{ single_price($order->coupon_discount) }}</td>
 							        </tr>

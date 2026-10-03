@@ -12,6 +12,44 @@
             <div class="col-auto">
                 <h1 class="h3">{{translate('Droploo All products')}}</h1>
             </div>
+            <div class="col-auto ml-auto">
+                <button type="button" class="btn btn-success" id="btn-import-all" data-toggle="modal" data-target="#import-all-modal" @if(count($notAddedIds) == 0) disabled @endif>
+                    <i class="las la-cloud-download-alt"></i> {{ translate('Add All Products') }} ({{ count($notAddedIds) }})
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk import confirm + progress modal -->
+    <div class="modal fade" id="import-all-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ translate('Add All Products') }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" id="import-all-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="import-all-confirm">
+                        <p>{{ translate('This will import') }} <strong>{{ count($notAddedIds) }}</strong> {{ translate('products that are not yet added, one by one. This may take a while - please keep this tab open.') }}</p>
+                    </div>
+                    <div id="import-all-progress" style="display:none;">
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" id="import-all-progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <p class="mb-1">
+                            {{ translate('Added') }}: <span id="import-all-added">0</span>,
+                            {{ translate('Skipped') }}: <span id="import-all-skipped">0</span>,
+                            {{ translate('Failed') }}: <span id="import-all-failed">0</span>
+                            / <span id="import-all-total">0</span>
+                        </p>
+                        <div id="import-all-log" style="max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
+                    <button type="button" class="btn btn-success" id="import-all-start">{{ translate('Start Import') }}</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -217,6 +255,79 @@
         function sort_products(el){
             $('#sort_products').submit();
         }
+
+        var importAllQueue = @json($notAddedIds);
+        var importAllRunning = false;
+
+        $('#import-all-start').on('click', function () {
+            if (importAllRunning) {
+                return;
+            }
+            importAllRunning = true;
+
+            $('#import-all-confirm').hide();
+            $('#import-all-progress').show();
+            $('#import-all-start').prop('disabled', true);
+            $('#import-all-close').prop('disabled', true);
+            $('#btn-import-all').prop('disabled', true);
+
+            var total = importAllQueue.length;
+            var added = 0, skipped = 0, failed = 0, done = 0;
+
+            $('#import-all-total').text(total);
+
+            function updateProgress() {
+                var pct = total > 0 ? Math.round((done / total) * 100) : 100;
+                $('#import-all-progress-bar').css('width', pct + '%').text(pct + '%');
+                $('#import-all-added').text(added);
+                $('#import-all-skipped').text(skipped);
+                $('#import-all-failed').text(failed);
+            }
+
+            function logLine(message, cls) {
+                $('#import-all-log').prepend('<div class="text-' + cls + '">' + message + '</div>');
+            }
+
+            function importNext(index) {
+                if (index >= importAllQueue.length) {
+                    $.post('{{ route("droploo.products.import_finish") }}', {_token: '{{ csrf_token() }}'})
+                        .always(function () {
+                            logLine('{{ translate("Import finished. Reloading...") }}', 'primary');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        });
+                    return;
+                }
+
+                var productId = importAllQueue[index];
+
+                $.ajax({
+                    url: '{{ route("droploo.products.import_one", ["id" => "__ID__"]) }}'.replace('__ID__', productId),
+                    type: 'POST',
+                    data: {_token: '{{ csrf_token() }}'},
+                }).done(function (res) {
+                    done++;
+                    if (res.status === 'added') {
+                        added++;
+                        logLine('#' + productId + ' - ' + res.message, 'success');
+                    } else if (res.status === 'skipped') {
+                        skipped++;
+                        logLine('#' + productId + ' - ' + res.message, 'secondary');
+                    } else {
+                        failed++;
+                        logLine('#' + productId + ' - ' + res.message, 'danger');
+                    }
+                }).fail(function () {
+                    done++;
+                    failed++;
+                    logLine('#' + productId + ' - {{ translate("Request failed") }}', 'danger');
+                }).always(function () {
+                    updateProgress();
+                    importNext(index + 1);
+                });
+            }
+
+            importNext(0);
+        });
 
         function bulk_delete() {
             var data = new FormData($('#sort_products')[0]);

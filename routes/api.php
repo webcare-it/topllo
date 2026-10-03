@@ -45,7 +45,7 @@ Route::group(['prefix' => 'v2'], function() {
     Route::apiResource('banners', 'Api\V2\BannerController')->only('index');
 
     Route::get('brands/top', 'Api\V2\BrandController@top')->middleware('api.cache');
-    Route::apiResource('brands', 'Api\V2\BrandController')->only('index')->middleware('api.cache');
+    Route::apiResource('brands', 'Api\V2\BrandController')->only('index')->middleware('api.cache')->name('index', 'api.brands.index');
 
     Route::get('business-settings', 'Api\V2\BusinessSettingController@index');
 
@@ -53,14 +53,14 @@ Route::group(['prefix' => 'v2'], function() {
     Route::get('all-utility', 'Api\V2\CategoryController@all_utility');
     Route::get('categories/home', 'Api\V2\CategoryController@home');
     Route::get('categories/top', 'Api\V2\CategoryController@top');
-    Route::apiResource('categories', 'Api\V2\CategoryController')->only('index')->middleware('api.cache');
+    Route::apiResource('categories', 'Api\V2\CategoryController')->only('index')->middleware('api.cache')->name('index', 'api.categories.index');
     Route::get('sub-categories/{id}', 'Api\V2\SubCategoryController@index')->name('subCategories.index');
 
     Route::apiResource('colors', 'Api\V2\ColorController')->only('index');
 
     Route::apiResource('currencies', 'Api\V2\CurrencyController')->only('index');
 
-    Route::apiResource('customers', 'Api\V2\CustomerController')->only('show');
+    Route::apiResource('customers', 'Api\V2\CustomerController')->only('show')->name('show', 'api.customers.show');
 
     Route::apiResource('general-settings', 'Api\V2\GeneralSettingController')->only('index');
 
@@ -185,7 +185,7 @@ Route::group(['prefix' => 'v2'], function() {
     Route::any('paypal/payment/done', 'Api\V2\PaypalController@getDone')->name('api.paypal.done');
     Route::any('paypal/payment/cancel', 'Api\V2\PaypalController@getCancel')->name('api.paypal.cancel');
 
-    Route::any('razorpay/pay-with-razorpay', 'Api\V2\RazorpayController@payWithRazorpay')->name('api.razorpay.payment');
+    Route::any('razorpay/pay-with-razorpay', 'Api\V2\RazorpayController@payWithRazorpay')->name('api.razorpay.pay');
     Route::any('razorpay/payment', 'Api\V2\RazorpayController@payment')->name('api.razorpay.payment');
     Route::post('razorpay/success', 'Api\V2\RazorpayController@success')->name('api.razorpay.success');
 

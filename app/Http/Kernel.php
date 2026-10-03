@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         // 'app_language' => AppLanguage::class,  // Removed reference to missing middleware
         'admin' => IsAdmin::class,
+        'super_admin' => \App\Http\Middleware\IsSuperAdmin::class,
         'seller' => IsSeller::class,
         'user' => IsUser::class,
         'unbanned' => IsUnbanned::class,

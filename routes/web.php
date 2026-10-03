@@ -52,12 +52,13 @@ Route::get('/', function() {
 Auth::routes([
     'verify' => true,
     'login' => false,
+    'logout' => false,
 ]);
 
 // Admin Login Routes - Use admin.web middleware for separate session cookie
 Route::middleware(['guest'])->group(function () {
     Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/admin/login', [LoginController::class, 'login'])->name('login');
+    Route::post('/admin/login', [LoginController::class, 'login']);
 });
 
 // Logout Route - Support both admin and frontend sessions

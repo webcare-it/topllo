@@ -208,6 +208,12 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td class="w-50 fw-600">{{ translate('Discount')}}</td>
+                                <td class="text-right">
+                                    <span class="text-italic">{{ single_price($order->discount) }}</span>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td class="w-50 fw-600">{{ translate('Coupon')}}</td>
                                 <td class="text-right">
                                     <span class="text-italic">{{ single_price($order->coupon_discount) }}</span>

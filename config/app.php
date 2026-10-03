@@ -91,6 +91,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Database Reset Tool
+    |--------------------------------------------------------------------------
+    |
+    | Master switch for the admin panel's "Reset Demo Data" tool. Must be
+    | explicitly enabled in .env; stays off in production by default so the
+    | destructive route is unreachable unless someone opts in on purpose.
+    |
+    */
+
+    'allow_db_reset' => filter_var(env('ALLOW_DB_RESET', false), FILTER_VALIDATE_BOOLEAN),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

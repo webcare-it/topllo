@@ -242,6 +242,14 @@
                     </tr>
                     <tr>
                         <td>
+                            <strong class="text-muted">{{translate('Discount')}} :</strong>
+                        </td>
+                        <td>
+                            {{ single_price($order->discount) }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <strong class="text-muted">{{translate('Coupon')}} :</strong>
                         </td>
                         <td>

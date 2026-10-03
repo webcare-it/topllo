@@ -948,6 +948,13 @@
                                     <span class="aiz-side-nav-text">{{translate('Social media Logins')}}</span>
                                 </a>
                             </li>
+                            @if(Auth::user()->user_type == 'admin')
+                                <li class="aiz-side-nav-item">
+                                    <a href="{{ route('database-cleanup.index') }}" class="aiz-side-nav-link">
+                                        <span class="aiz-side-nav-text">{{translate('Reset Demo Data')}}</span>
+                                    </a>
+                                </li>
+                            @endif
 
                             {{-- <li class="aiz-side-nav-item">
                                 <a href="javascript:void(0);" class="aiz-side-nav-link">
